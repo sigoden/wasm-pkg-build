@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { parse, traverse, template, types, transformFromAstSync } from '@babel/core';
+import path from 'path';
 import fs from 'fs';
 import generate from '@babel/generator';
 
@@ -49,7 +50,7 @@ const newAst = transformFromAstSync(ast, null, {
 
 newAst.program.body = [
   ...template(`let imports = {};
-imports['__wbindgen_placeholder__'] = module.exports;
+imports['./${path.basename(bundlerFile)}'] = module.exports;
 let wasm;
 const { TextDecoder, TextEncoder } = require(\`util\`);`)() as types.Statement[],
   ...newAst.program.body,
