@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
-import { parse, createConfigItem, traverse, template, types, transformFromAstSync } from '@babel/core';
-import path from 'path';
+import { parse, traverse, types } from '@babel/core';
 import fs from 'fs';
 import generate from '@babel/generator';
 
@@ -19,7 +18,9 @@ try {
 }
 const ast = parse(code, { sourceType: 'module' });
 
-let wasm: string = '';
+let wasmFilename: string = '';
+const wbindgenExports: types.ExpressionStatement[] = []
+
 traverse(ast, {
   enter(path) {
     if (path.isIdentifier({ name: 'lTextDecoder' })) {
@@ -32,40 +33,39 @@ traverse(ast, {
     } else if (path.isIdentifier({ name: 'cachedTextDecoder' })) {
       const node = path.parent as any;
       if (node?.init?.callee?.name) node.init.callee.name = 'TextDecoder'
-    } else if (path.type === 'ImportDeclaration') {
+    } else if (path.isImportDeclaration()) {
       let source: string = (path.node as any).source.value;
       if (source.endsWith(".wasm")) {
-        wasm = source;
+        wasmFilename = source.slice(2, -5);
         path.remove();
       }
+    } else if (path.isExportNamedDeclaration()) {
+        const declaration = path.node.declaration as types.FunctionDeclaration;
+        const name = declaration?.id?.name;
+        const left = types.memberExpression(types.memberExpression(types.identifier("module"), types.identifier("exports")), types.identifier(name))
+        const right = types.functionExpression(null, declaration.params, declaration.body);
+        const assign = types.assignmentExpression(("="), left, right);
+        wbindgenExports.push(types.expressionStatement(assign));
+        path.remove();
     }
   }
 });
 
-const newAst = transformFromAstSync(ast, null, {
-  plugins: [
-    createConfigItem(require("@babel/plugin-transform-modules-commonjs"))
-  ],
-  ast: true,
-}).ast;
-
-
-newAst.program.body = [
-  ...template(`let imports = {};
-imports['./${path.basename(bundlerFile)}'] = module.exports;
+const middle = generate(ast).code
+const output = `let imports = {};
+imports['./${wasmFilename}.js'] = module.exports;
 let wasm;
-const { TextDecoder, TextEncoder } = require(\`util\`);`)() as types.Statement[],
-  ...newAst.program.body,
-  ...template(`const path = require('path').join(__dirname, '${wasm.slice(2)}');
+const { TextDecoder, TextEncoder } = require(\`util\`);
+${middle}
+${generate(types.program(wbindgenExports)).code}
+const path = require('path').join(__dirname, '${wasmFilename}.wasm');
 const bytes = require('fs').readFileSync(path);
 
 const wasmModule = new WebAssembly.Module(bytes);
 const wasmInstance = new WebAssembly.Instance(wasmModule, imports);
 wasm = wasmInstance.exports;
-module.exports.__wasm = wasm;`)() as types.Statement[],
-]
+module.exports.__wasm = wasm;`
 
-const output = generate(newAst, {}, code).code
 try {
   fs.writeFileSync(targetFile, output);
 } catch (err) {
