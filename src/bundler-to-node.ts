@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { parse, traverse, template, types, transformFromAstSync } from '@babel/core';
+import { parse, createConfigItem, traverse, template, types, transformFromAstSync } from '@babel/core';
 import path from 'path';
 import fs from 'fs';
 import generate from '@babel/generator';
@@ -43,7 +43,9 @@ traverse(ast, {
 });
 
 const newAst = transformFromAstSync(ast, null, {
-  plugins: ["@babel/plugin-transform-modules-commonjs"],
+  plugins: [
+    createConfigItem(require("@babel/plugin-transform-modules-commonjs"))
+  ],
   ast: true,
 }).ast;
 
