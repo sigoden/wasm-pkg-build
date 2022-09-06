@@ -2,7 +2,7 @@
 
 Utilities for wasm pack. 
 
-Use wasm-pack-utils to generate all kinds of js module (esm-bundler, esm-web, esm-web-inline, cjs, cjs-inline) share one wasm file.
+Use wasm-pack-utils to generate all kinds of js module (esm-bundler, cjs, esm-async, esm-sync) share one wasm file.
 
 
 ## Install
@@ -22,19 +22,23 @@ wasm-pack build
 ### Generate cjs module 
 
 ```sh
-wasm-pack-utils node -o test_crate.js test_crate_bg.js 
+wasm-pack-utils node test_crate_bg.js -o test_crate.js
 ```
+
+The module is sync. it can only used in nodejs.
 
 ```js
 const { reverse } = require("./pkg/test_crate.js");
 console.log(reverse("test_crate"));
 ```
 
-### Generate esm-web module
+### Generate esm-async module
 
 ```sh
-wasm-pack-utils web -o test_crate_web.js test_crate_bg.js
+wasm-pack-utils web test_crate_bg.js -o test_crate_web.js
 ```
+
+The module is async. it can only used in web.
 
 ```html
   <script type="module" src="/test-web.js"></script>
@@ -48,6 +52,19 @@ wasm-pack-utils web -o test_crate_web.js test_crate_bg.js
 
   main()
   </script>
+```
+
+### Generate esm-sync module
+
+```sh
+wasm-pack-utils worker test_crate_bg.js -o test_crate_web.js
+```
+
+The module is sync.  The wasm is inline into the `.js` file.  It can used in nodejs and web worker.
+
+```js
+import { reverse } from "./pkg/test_crate_worker.js";
+console.log(reverse("test_crate"));
 ```
 
 ### Modify package.json
@@ -73,20 +90,4 @@ Also includes `*_web.js`, so it can works on web without need a bunder.
   ],
   "sideEffects": false,
 }
-```
-
-### Inline wasm 
-
-You can also inline the `.wasm` file into the `.js` file. 
-
-This is slower and it increases the file size by ~33%, but it does not require a separate `.wasm` file.
-
-For cjs, run
-```
-wasm-pack-utils node --inline-wasm -o test_crate_inline.js test_crate_bg.js 
-```
-
-For esm-web, run
-```
-wasm-pack-utils node --inline-wasm -o test_crate_web_inline.js test_crate_bg.js 
 ```

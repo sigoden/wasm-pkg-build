@@ -1,8 +1,6 @@
 import { parse, types } from '@babel/core';
 import generate from '@babel/generator';
-import { inlineWasm, transformAst } from './helper';
-
-const IS_WEB = false;
+import { inlineWasm, Kind, transformAst } from './helper';
 
 /**
  * Transform bundler bg.js to cjs module
@@ -15,7 +13,7 @@ export function transform(code: string, wasmData?: string) {
     ast,
     wasmFilename,
     wbindgenExports
-  } = transformAst(parse(code, { sourceType: 'module' }), IS_WEB);
+  } = transformAst(parse(code, { sourceType: 'module' }), Kind.Node);
 
   const middle = generate(ast).code
   return `let imports = {};
@@ -34,7 +32,7 @@ module.exports.__wasm = wasm;`
 
 function generateLoadWasm(wasmFilename: string, wasmData?: string) {
   if (wasmData) {
-    return `const bytes = ${inlineWasm(wasmData, IS_WEB)};`
+    return `const bytes = ${inlineWasm(wasmData, Kind.Node)};`
   } else {
     return `const path = require('path').join(__dirname, '${wasmFilename}.wasm');
 const bytes = require('fs').readFileSync(path);`

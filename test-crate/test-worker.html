@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+</head>
+
+<body>
+    <script type="module">
+        const worker = new Worker('./worker.js', { type: "module" });
+        worker.addEventListener("message", ({ data }) => {
+            if (data?.action === "init") {
+                log("[main] recv init, send ping")
+                worker.postMessage({action: "ping", text: "worker" })
+            } else if (data?.action === "pong") {
+                log(`[main] recv pong(${data.text})`);
+            }
+        });
+        function log(msg) {
+            document.body.insertAdjacentHTML("beforebegin", `<p>${msg}</p>`)
+            
+        }
+    </script>
+</body>
+
+</html>

@@ -12,6 +12,10 @@ yargs(hideBin(process.argv))
         type: 'string',
         description: 'Wasm-pack generated <crate_name>_bg.js file'
       })
+      .options('inline-wasm', {
+        type: 'boolean',
+        description: 'Inline wasm into generated js file',
+      })
   }, (argv) => {
     run(argv, require('./node'))
   })
@@ -21,8 +25,22 @@ yargs(hideBin(process.argv))
         type: 'string',
         description: 'Wasm-pack generated bundler_bg.js file'
       })
+      .options('inline-wasm', {
+        type: 'boolean',
+        description: 'Inline wasm into generated js file',
+      })
   }, (argv) => {
     run(argv, require('./web'))
+  })
+  .command('worker <target>', 'Convert bundler to worker target', (yargs) => {
+    return commonOptions(yargs)
+      .positional('target', {
+        type: 'string',
+        description: 'Wasm-pack generated bundler_bg.js file'
+      })
+  }, (argv) => {
+    argv.inlineWasm = true;
+    run(argv, require('./worker'))
   })
   .help()
   .version()
@@ -56,10 +74,6 @@ function commonOptions(yargs) {
     .options('wasm-file', {
       type: 'string',
       description: 'Specific wasm file path'
-    })
-    .options('inline-wasm', {
-      type: 'boolean',
-      description: 'Inline wasm into generated js file',
     })
 }
 

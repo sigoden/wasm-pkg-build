@@ -30,7 +30,10 @@ test() {
     ts-node src/bin.ts web ${crate}/pkg/${crate_pkg}_bg.js -o ${crate}/pkg/${crate_pkg}_web.js
     echo Generate esm-web-inline
     ts-node src/bin.ts web --inline-wasm ${crate}/pkg/${crate_pkg}_bg.js -o ${crate}/pkg/${crate_pkg}_web_inline.js
+    echo Generate worker
+    ts-node src/bin.ts worker ${crate}/pkg/${crate_pkg}_bg.js -o ${crate}/pkg/${crate_pkg}_worker.mjs
     node test-crate/test-node.js
+    node test-crate/test-worker.mjs
 }
 
 eval $(argc --argc-eval "$0" "$@")

@@ -1,6 +1,12 @@
 import { ParseResult, traverse, types } from '@babel/core';
 
-export function transformAst(ast: ParseResult, isWeb: boolean) {
+export enum Kind {
+  Node,
+  Web,
+  Worker,
+}
+
+export function transformAst(ast: ParseResult, kind: Kind) {
   let wasmFilename = '';
   let wasmExportName = '';
   const wbindgenExports: types.ExpressionStatement[] = []
@@ -8,14 +14,14 @@ export function transformAst(ast: ParseResult, isWeb: boolean) {
 
   traverse(ast, {
     enter(path) {
-      if (path.isIdentifier({ name: 'lTextDecoder' })) {
+      if (path.isIdentifier({ name: 'lTextDecoder' }) && kind !== Kind.Worker) {
         path.parentPath.parentPath.remove();
-      } else if (path.isIdentifier({ name: 'lTextEncoder' })) {
+      } else if (path.isIdentifier({ name: 'lTextEncoder' }) && kind !== Kind.Worker) {
         path.parentPath.parentPath.remove();
-      } else if (path.isIdentifier({ name: 'cachedTextEncoder' })) {
+      } else if (path.isIdentifier({ name: 'cachedTextEncoder' }) && kind !== Kind.Worker) {
         const node = path.parent as any;
         if (node?.init?.callee?.name) node.init.callee.name = 'TextEncoder'
-      } else if (path.isIdentifier({ name: 'cachedTextDecoder' })) {
+      } else if (path.isIdentifier({ name: 'cachedTextDecoder' }) && kind !== Kind.Worker) {
         const node = path.parent as any;
         if (node?.init?.callee?.name) node.init.callee.name = 'TextDecoder'
       } else if (path.isImportDeclaration()) {
@@ -29,7 +35,7 @@ export function transformAst(ast: ParseResult, isWeb: boolean) {
         const declaration = path.node.declaration;
         if (types.isFunctionDeclaration(declaration)) {
           const name = declaration?.id?.name;
-          if (isWeb) {
+          if (kind !== Kind.Node) {
             exportNames.push(name);
           } else {
             const body = (path.parent as any).body;
@@ -42,7 +48,7 @@ export function transformAst(ast: ParseResult, isWeb: boolean) {
           }
         } else if (types.isClassDeclaration(declaration)) {
           const name = declaration.id.name;
-          if (isWeb) {
+          if (kind !== Kind.Node) {
             exportNames.push(name);
           } else {
             const body = (path.parent as any).body;
@@ -59,8 +65,8 @@ export function transformAst(ast: ParseResult, isWeb: boolean) {
   return { ast, wasmFilename, wasmExportName, wbindgenExports, exportNames };
 }
 
-export function inlineWasm(wasmData: string, isWeb: boolean) {
-  if (isWeb) {
+export function inlineWasm(wasmData: string, kind: Kind) {
+  if (kind !== Kind.Node) {
     return `
     const base64codes = [62,0,0,0,63,52,53,54,55,56,57,58,59,60,61,0,0,0,0,0,0,0,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,0,0,0,0,0,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51];
     
