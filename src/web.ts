@@ -15,6 +15,7 @@ export function transform(code: string, wasmData?: string) {
     wasmFilename,
     wasmExportName,
     exportNames,
+    memviews,
   } = transformAst(parse(code, { sourceType: 'module' }), Kind.Web);
 
   const middle = generate(ast).code;
@@ -67,8 +68,8 @@ export default async function init(input) {
 
     init.__${wasmExportName} = ${wasmExportName} = instance.exports;
     init.__wbindgen_wasm_module = module;
-    cachedUint8Memory0 = new Uint8Array();
-
+${memviews.map(v => `    ${v};`).join("\n")}
+    
     return imports["./${wasmFilename}.js"];
 }
   `;

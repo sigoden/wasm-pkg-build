@@ -1,4 +1,5 @@
-import { ParseResult, traverse, types } from '@babel/core';
+import { ParseResult, traverse, NodePath, types } from '@babel/core';
+import generate from '@babel/generator';
 
 export enum Kind {
   Node,
@@ -11,19 +12,30 @@ export function transformAst(ast: ParseResult, kind: Kind) {
   let wasmExportName = '';
   const wbindgenExports: types.ExpressionStatement[] = []
   const exportNames: string[] = []
+  const memviews: string[] = [];
 
   traverse(ast, {
     enter(path) {
-      if (path.isIdentifier({ name: 'lTextDecoder' }) && kind !== Kind.Worker) {
-        path.parentPath.parentPath.remove();
-      } else if (path.isIdentifier({ name: 'lTextEncoder' }) && kind !== Kind.Worker) {
-        path.parentPath.parentPath.remove();
-      } else if (path.isIdentifier({ name: 'cachedTextEncoder' }) && kind !== Kind.Worker) {
-        const node = path.parent as any;
-        if (node?.init?.callee?.name) node.init.callee.name = 'TextEncoder'
-      } else if (path.isIdentifier({ name: 'cachedTextDecoder' }) && kind !== Kind.Worker) {
-        const node = path.parent as any;
-        if (node?.init?.callee?.name) node.init.callee.name = 'TextDecoder'
+      if (path.isVariableDeclarator() && pathLevel(path) === 1) {
+        let id = path.node.id;
+        if (types.isIdentifier(id)) {
+          if (['lTextDecoder', 'lTextEncoder'].indexOf(id.name) > -1) {
+            if (kind !== Kind.Worker) path.parentPath.remove();
+          } else if (['cachedTextEncoder', 'cachedTextDecoder'].indexOf(id.name) > -1) {
+            if (kind !== Kind.Worker) {
+              let init = path.node.init;
+              if (types.isNewExpression(init)) {
+                if (types.isIdentifier(init.callee)) {
+                  init.callee.name = id.name.replace(/cached/, '')
+                }
+              }
+            }
+          } else if (id.name.startsWith("cachedUint")) {
+            if (kind == Kind.Web) {
+              memviews.push(`${id.name} = ${stringifyAst(path.node.init)}`);
+            }
+          }
+        }
       } else if (path.isImportDeclaration()) {
         let source: string = (path.node as any).source.value;
         if (source.endsWith(".wasm")) {
@@ -62,7 +74,7 @@ export function transformAst(ast: ParseResult, kind: Kind) {
       }
     }
   });
-  return { ast, wasmFilename, wasmExportName, wbindgenExports, exportNames };
+  return { ast, wasmFilename, wasmExportName, wbindgenExports, exportNames, memviews };
 }
 
 export function inlineWasm(wasmData: string, kind: Kind) {
@@ -98,4 +110,17 @@ export function inlineWasm(wasmData: string, kind: Kind) {
   } else {
     return `Buffer.from('${wasmData}', 'base64')`;
   }
+}
+
+
+function pathLevel(path: NodePath, level = 0) {
+  const parentPath = path.parentPath;
+  if (!parentPath || parentPath.type === "Program") {
+    return level
+  }
+  return pathLevel(parentPath, level + 1);
+}
+
+function stringifyAst(node: types.Node) {
+  return generate(node).code
 }
