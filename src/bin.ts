@@ -55,7 +55,7 @@ function commonOptions(yargs) {
     })
     .options('wasm-file', {
       type: 'string',
-      description: 'Sepecific wasm file path'
+      description: 'Specific wasm file path'
     })
     .options('inline-wasm', {
       type: 'boolean',

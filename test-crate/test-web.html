@@ -1,10 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
 </head>
+
 <body>
     <div id="output"></div>
-    <script type="module" src="/test-web.js"></script>
+    <!-- <script type="module" src="/test-web.js"></script> -->
+    <script type="module">
+        import init from "./pkg/test_crate_web.js";
+        import init2 from "./pkg/test_crate_web_inline.js";
+
+        async function ready() {
+            const mod = await init()
+            const mod2 = await init2();
+            document.querySelector("#output").innerHTML =
+                mod.reverse("test_crate_web") + "<br/>" + mod2.reverse("test_crate_web_inline")
+        }
+
+        window.addEventListener("DOMContentLoaded", ready);
+
+    </script>
 </body>
+
 </html>
