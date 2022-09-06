@@ -1,4 +1,6 @@
-const { reverse } = require("./pkg/test_crate.js");
-console.log(reverse("test_crate"));
-const { reverse: reverse2 } = require("./pkg/test_crate_inline.js");
-console.log(reverse2("test_crate_inline"));
+const crate = require("./pkg/test_crate.js");
+console.log(crate.reverse("test_crate"));
+console.log(new crate.Greeter("test_crate").greet());
+const crateInline = require("./pkg/test_crate_inline.js");
+console.log(crateInline.reverse("test_crate_inline"));
+console.log(new crateInline.Greeter("test_crate_inline").greet());

@@ -4,6 +4,7 @@ export function transformAst(ast: ParseResult, isWeb: boolean) {
   let wasmFilename = '';
   let wasmExportName = '';
   const wbindgenExports: types.ExpressionStatement[] = []
+  const exportNames: string[] = []
 
   traverse(ast, {
     enter(path) {
@@ -25,27 +26,42 @@ export function transformAst(ast: ParseResult, isWeb: boolean) {
           path.remove();
         }
       } else if (path.isExportNamedDeclaration()) {
-          const declaration = path.node.declaration as types.FunctionDeclaration;
+        const declaration = path.node.declaration;
+        if (types.isFunctionDeclaration(declaration)) {
           const name = declaration?.id?.name;
-          let left;
           if (isWeb) {
-            left = types.memberExpression(types.memberExpression(types.identifier("imports"), types.stringLiteral(`./${wasmFilename}.js`), true), types.identifier(name))
+            exportNames.push(name);
           } else {
-            left = types.memberExpression(types.memberExpression(types.identifier("module"), types.identifier("exports")), types.identifier(name))
+            const body = (path.parent as any).body;
+            const left = types.memberExpression(types.memberExpression(types.identifier("module"), types.identifier("exports")), types.identifier(name))
+            const right = types.functionExpression(null, declaration.params, declaration.body);
+            const assign = types.assignmentExpression(("="), left, right);
+            body.push(types.expressionStatement(assign));
+            // wbindgenExports.push(types.expressionStatement(assign));
+            path.remove();
           }
-          const right = types.functionExpression(null, declaration.params, declaration.body);
-          const assign = types.assignmentExpression(("="), left, right);
-          wbindgenExports.push(types.expressionStatement(assign));
-          path.remove();
+        } else if (types.isClassDeclaration(declaration)) {
+          const name = declaration.id.name;
+          if (isWeb) {
+            exportNames.push(name);
+          } else {
+            const body = (path.parent as any).body;
+            body.push(declaration);
+            const left = types.memberExpression(types.memberExpression(types.identifier("module"), types.identifier("exports")), types.identifier(name))
+            const assign = types.assignmentExpression(("="), left, types.identifier(name));
+            body.push(types.expressionStatement(assign));
+            path.remove();
+          }
+        }
       }
     }
   });
-  return { ast, wasmFilename, wasmExportName, wbindgenExports };
+  return { ast, wasmFilename, wasmExportName, wbindgenExports, exportNames };
 }
 
 export function inlineWasm(wasmData: string, isWeb: boolean) {
   if (isWeb) {
-  return `
+    return `
     const base64codes = [62,0,0,0,63,52,53,54,55,56,57,58,59,60,61,0,0,0,0,0,0,0,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,0,0,0,0,0,0,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51];
     
     function getBase64Code(charCode) {

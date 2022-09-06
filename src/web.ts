@@ -1,4 +1,4 @@
-import { parse, types } from '@babel/core';
+import { parse } from '@babel/core';
 import generate from '@babel/generator';
 import { inlineWasm, transformAst } from './helper';
 
@@ -15,7 +15,7 @@ export function transform(code: string, wasmData?: string) {
     ast,
     wasmFilename,
     wasmExportName,
-    wbindgenExports
+    exportNames,
   } = transformAst(parse(code, { sourceType: 'module' }), IS_WEB);
 
   const middle = generate(ast).code;
@@ -25,7 +25,7 @@ ${middle}
 function getImports() {
     const imports = {};
     imports["./${wasmFilename}.js"] = {};
-    ${generate(types.program(wbindgenExports)).code}
+${exportNames.map(name => `    imports["./${wasmFilename}.js"].${name}=${name}`).join("\n")}
     return imports;
 }
 
@@ -79,7 +79,7 @@ function generateLoadWasm(wasmFilename: string, wasmData?: string) {
   if (wasmData) {
     return inlineWasm(wasmData, IS_WEB);
   } else {
-    return  `
+    return `
     if (typeof input === 'undefined') {
         input = new URL('${wasmFilename}.wasm', import.meta.url);
     }

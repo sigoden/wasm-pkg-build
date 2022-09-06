@@ -9,14 +9,18 @@
     <div id="output"></div>
     <!-- <script type="module" src="/test-web.js"></script> -->
     <script type="module">
-        import init from "./pkg/test_crate_web.js";
-        import init2 from "./pkg/test_crate_web_inline.js";
+        import crateInit from "./pkg/test_crate_web.js";
+        import crateInlineWasmInit from "./pkg/test_crate_web_inline.js";
 
         async function ready() {
-            const mod = await init()
-            const mod2 = await init2();
-            document.querySelector("#output").innerHTML =
-                mod.reverse("test_crate_web") + "<br/>" + mod2.reverse("test_crate_web_inline")
+            const crate = await crateInit()
+            const crateInline = await crateInlineWasmInit();
+            document.querySelector("#output").innerHTML = `
+            ${crate.reverse("test_crate_web")}<br/>
+            ${new crate.Greeter("test_crate_web").greet()}<br/>
+            ${crateInline.reverse("test_crate_web_inline")}<br/>
+            ${new crateInline.Greeter("test_crate_web_inline").greet()}<br/>
+            `;
         }
 
         window.addEventListener("DOMContentLoaded", ready);

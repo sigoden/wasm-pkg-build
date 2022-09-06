@@ -2,6 +2,9 @@
 
 set -e
 
+crate=test-crate
+crate_pkg=${crate/-/_}
+
 # @cmd
 run() {
     ts-node src/bin.ts $@
@@ -13,14 +16,20 @@ build() {
 }
 
 # @cmd
-test() {
-    local crate=test-crate
-    local name=${crate/-/_}
+build-crate() {
     wasm-pack build $crate
-    ts-node src/bin.ts node ${crate}/pkg/${name}_bg.js -o ${crate}/pkg/${name}.js
-    ts-node src/bin.ts node --inline-wasm ${crate}/pkg/${name}_bg.js -o ${crate}/pkg/${name}_inline.js
-    ts-node src/bin.ts web ${crate}/pkg/${name}_bg.js -o ${crate}/pkg/${name}_web.js
-    ts-node src/bin.ts web --inline-wasm ${crate}/pkg/${name}_bg.js -o ${crate}/pkg/${name}_web_inline.js
+}
+
+# @cmd
+test() {
+    echo Generate cjs
+    ts-node src/bin.ts node ${crate}/pkg/${crate_pkg}_bg.js -o ${crate}/pkg/${crate_pkg}.js
+    echo Generate cjs-inline
+    ts-node src/bin.ts node --inline-wasm ${crate}/pkg/${crate_pkg}_bg.js -o ${crate}/pkg/${crate_pkg}_inline.js
+    echo Generate esm-web
+    ts-node src/bin.ts web ${crate}/pkg/${crate_pkg}_bg.js -o ${crate}/pkg/${crate_pkg}_web.js
+    echo Generate esm-web-inline
+    ts-node src/bin.ts web --inline-wasm ${crate}/pkg/${crate_pkg}_bg.js -o ${crate}/pkg/${crate_pkg}_web_inline.js
     node test-crate/test-node.js
 }
 
