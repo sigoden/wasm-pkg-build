@@ -1,14 +1,16 @@
 import { parse, types } from '@babel/core';
 import generate from '@babel/generator';
-import { transformAst } from "./helper";
+import { inlineWasm, transformAst } from './helper';
 
-export default function transform(code: string) {
+export const IS_WEB = true;
+
+export function transform(code: string, wasmData?: string) {
   const {
     ast,
     wasmFilename,
     wasmExportName,
     wbindgenExports
-  } = transformAst(parse(code, { sourceType: 'module' }), true);
+  } = transformAst(parse(code, { sourceType: 'module' }), IS_WEB);
 
   const middle = generate(ast).code;
   return `
@@ -53,15 +55,9 @@ async function load(module, imports) {
 }
 
 export default async function init(input) {
-    if (typeof input === 'undefined') {
-        input = new URL('${wasmFilename}.wasm', import.meta.url);
-    }
     const imports = getImports();
 
-    if (typeof input === 'string' || (typeof Request === 'function' && input instanceof Request) || (typeof URL === 'function' && input instanceof URL)) {
-        input = fetch(input);
-    }
-
+    ${generateLoadWasm(wasmFilename, wasmData)}
     const { instance, module } = await load(await input, imports);
 
     init.__${wasmExportName} = ${wasmExportName} = instance.exports;
@@ -71,4 +67,20 @@ export default async function init(input) {
     return imports["./${wasmFilename}.js"];
 }
   `;
+}
+
+function generateLoadWasm(wasmFilename: string, wasmData?: string) {
+  if (wasmData) {
+    return inlineWasm(wasmData, IS_WEB);
+  } else {
+    return  `
+    if (typeof input === 'undefined') {
+        input = new URL('${wasmFilename}.wasm', import.meta.url);
+    }
+    
+    if (typeof input === 'string' || (typeof Request === 'function' && input instanceof Request) || (typeof URL === 'function' && input instanceof URL)) {
+        input = fetch(input);
+    }`;
+  }
+
 }
