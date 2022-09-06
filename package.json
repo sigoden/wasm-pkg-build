@@ -1,6 +1,6 @@
 {
   "name": "wasm-pack-utils",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "author": "sigoden <sigoden@gmail.com>",
   "description": "Utilities for wasm pack",
   "main": "./dist/index.js",
@@ -13,6 +13,8 @@
     "dist"
   ],
   "scripts": {
+    "prepublishOnly": "npm run clean && npm run build",
+    "clean": "rm -rf dist",
     "build": "tsc"
   },
   "keywords": [
