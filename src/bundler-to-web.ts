@@ -1,60 +1,17 @@
-#!/usr/bin/env node
-
-import { parse, traverse, types } from '@babel/core';
-import fs from 'fs';
+import { parse, types } from '@babel/core';
 import generate from '@babel/generator';
+import { transformAst } from "./helper";
 
-const [bundlerFile, targetFile] = process.argv.slice(2);
-if (!bundlerFile) {
-  console.log('Usage: bundler-to-node <pkg_bg.js> <pkg.js>');
-  process.exit(0);
-}
+export default function transform(code: string) {
+  const {
+    ast,
+    wasmFilename,
+    wasmExportName,
+    wbindgenExports
+  } = transformAst(parse(code, { sourceType: 'module' }), true);
 
-let code: string;
-try {
-  code = fs.readFileSync(bundlerFile, 'utf-8');
-} catch (err) {
-  console.log(`error: failed to read '${bundlerFile}', ${err.message}`);
-}
-const ast = parse(code, { sourceType: 'module' });
-
-let wasmFilename = '';
-let wasmExportName = '';
-const wbindgenExports: types.ExpressionStatement[] = []
-
-traverse(ast, {
-  enter(path) {
-    if (path.isIdentifier({ name: 'lTextDecoder' })) {
-      path.parentPath.parentPath.remove();
-    } else if (path.isIdentifier({ name: 'lTextEncoder' })) {
-      path.parentPath.parentPath.remove();
-    } else if (path.isIdentifier({ name: 'cachedTextEncoder' })) {
-      const node = path.parent as any;
-      if (node?.init?.callee?.name) node.init.callee.name = 'TextEncoder'
-    } else if (path.isIdentifier({ name: 'cachedTextDecoder' })) {
-      const node = path.parent as any;
-      if (node?.init?.callee?.name) node.init.callee.name = 'TextDecoder'
-    } else if (path.isImportDeclaration()) {
-      let source: string = (path.node as any).source.value;
-      if (source.endsWith(".wasm")) {
-        wasmExportName = (path.node.specifiers[0] as any).local.name
-        wasmFilename = source.slice(2, -5);
-        path.remove();
-      }
-    } else if (path.isExportNamedDeclaration()) {
-        const declaration = path.node.declaration as types.FunctionDeclaration;
-        const name = declaration?.id?.name;
-        const left = types.memberExpression(types.memberExpression(types.identifier("imports"), types.stringLiteral(`./${wasmFilename}.js`), true), types.identifier(name))
-        const right = types.functionExpression(null, declaration.params, declaration.body);
-        const assign = types.assignmentExpression(("="), left, right);
-        wbindgenExports.push(types.expressionStatement(assign));
-        path.remove();
-      }
-  }
-});
-
-const middle = generate(ast).code;
-const output = `
+  const middle = generate(ast).code;
+  return `
 let ${wasmExportName};
 ${middle}
 function getImports() {
@@ -113,11 +70,5 @@ export default async function init(input) {
 
     return imports["./${wasmFilename}.js"];
 }
-`;
-
-try {
-  fs.writeFileSync(targetFile, output);
-} catch (err) {
-  console.log(`error: failed to write '${targetFile}', ${err.message}`);
-  process.exit(2);
+  `;
 }
