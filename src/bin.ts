@@ -13,16 +13,16 @@ yargs(hideBin(process.argv))
         description: 'Wasm-pack generated <crate_name>_bg.js file'
       })
   }, (argv) => {
-    run(argv, require('./bundler-to-node'))
+    run(argv, require('./node'))
   })
-  .command('web <target>', 'Convert bundler to node target', (yargs) => {
+  .command('web <target>', 'Convert bundler to web target', (yargs) => {
     return commonOptions(yargs)
       .positional('target', {
         type: 'string',
         description: 'Wasm-pack generated bundler_bg.js file'
       })
   }, (argv) => {
-    run(argv, require('./bundler-to-web'))
+    run(argv, require('./web'))
   })
   .help()
   .version()

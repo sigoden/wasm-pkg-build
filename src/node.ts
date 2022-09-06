@@ -2,8 +2,14 @@ import { parse, types } from '@babel/core';
 import generate from '@babel/generator';
 import { inlineWasm, transformAst } from './helper';
 
-export const IS_WEB = false;
+const IS_WEB = false;
 
+/**
+ * Transform bundler bg.js to cjs module
+ * @param code - source code
+ * @param wasmData - wasm code in base64
+ * @returns Generated code
+ */
 export function transform(code: string, wasmData?: string) {
   const {
     ast,

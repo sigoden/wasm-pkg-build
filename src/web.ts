@@ -2,8 +2,14 @@ import { parse, types } from '@babel/core';
 import generate from '@babel/generator';
 import { inlineWasm, transformAst } from './helper';
 
-export const IS_WEB = true;
+const IS_WEB = true;
 
+/**
+ * Transform bundler bg.js to esm-web module
+ * @param code - source code
+ * @param wasmData - wasm code in base64
+ * @returns Generated code
+ */
 export function transform(code: string, wasmData?: string) {
   const {
     ast,
