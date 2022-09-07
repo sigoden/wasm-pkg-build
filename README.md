@@ -1,9 +1,6 @@
 # wasm-pack-utils
 
-Utilities for wasm pack. 
-
-Use wasm-pack-utils to generate all kinds of js module (esm-bundler, cjs, esm-async, esm-sync) share one wasm file.
-
+Use wasm-pack-utils to generate all kinds of wasm js modules (esm-bundler, cjs, esm-async, esm-sync) shares same wasm file.
 
 ## Install
 
@@ -11,66 +8,62 @@ Use wasm-pack-utils to generate all kinds of js module (esm-bundler, cjs, esm-as
 npm i wasm-pack-utils
 ```
 
-## Usage
+## Get Started
 
-First, You need generate module with wasm-pack
+Javascript has two module type: cjs and esm.
+
+WebAssembly has two initialization style: sync(`WebAssembly.Instance`) and async(`WebAssembly.instantiate`/`WebAssembly.instantiateStreaming`).
+
+There is also an option to inline wasm into a single js file.
+
+So the js module containing wasm has the following module types:
+
+| name        | sync | inline | target       | cli                                |
+| ----------- | ---- | ------ | ------------ | ---------------------------------- |
+| esm-bundler | -    | ✗      | -            | wasm-pack build                    |
+| cjs         | ✓    | ✗      | node         | wasm-pack-utils node               |
+| cjs-inline  | ✓    | ✓      | node         | wasm-pack-utils node --inline-wasm |
+| esm-async   | ✗    | ✗      | web          | wasm-pack-utils web                |
+| esm-inline  | ✗    | ✓      | web          | wasm-pack-utils web --inline-wasm  |
+| esm-sync    | ✓    | ✓      | worker, node | wasm-pack-utils worker             |
+
+Generate cjs module:
 
 ```
+cd test-crate
 wasm-pack build
+wasm-pack-utils node pkg/test_crate_bg.js -o pkg/test_crate.js
 ```
 
-### Generate cjs module 
 
-```sh
-wasm-pack-utils node test_crate_bg.js -o test_crate.js
-```
-
-The module is sync. it can only used in nodejs.
+Import cjs/cjs-inline module:
 
 ```js
 const { reverse } = require("./pkg/test_crate.js");
 console.log(reverse("test_crate"));
 ```
 
-### Generate esm-async module
+Import esm-async/esm-inline module:
 
-```sh
-wasm-pack-utils web test_crate_bg.js -o test_crate_web.js
+```js
+import init from "./pkg/test_crate_web.js";
+init().then(mod => {
+  console.log(mod.reverse("test_crate_web"));
+})
 ```
 
-The module is async. it can only used in web.
-
-```html
-  <script type="module" src="/test-web.js"></script>
-  <script>
-  import init from "./pkg/test_crate_web.js";
-
-  async function main() {
-    const mod = await init()
-    console.log(mod.reverse("test_crate_web"));
-  }
-
-  main()
-  </script>
-```
-
-### Generate esm-sync module
-
-```sh
-wasm-pack-utils worker test_crate_bg.js -o test_crate_web.js
-```
-
-The module is sync.  The wasm is inline into the `.js` file.  It can used in nodejs and web worker.
+Import esm-sync module:
 
 ```js
 import { reverse } from "./pkg/test_crate_worker.js";
 console.log(reverse("test_crate"));
 ```
 
-### Modify package.json
+### Best practice
 
-Use `main` to export cjs module, so it can works on node just like normal node modules. 
-Also includes `*_web.js`, so it can works on web without need a bunder.
+Use `module` to export esm-bundler module.
+Use `main` to export cjs module, so it can works on node just like plain js modules. 
+Also includes esm-async module, so it can run on the web without a bundler.
 
 ```json
 {
