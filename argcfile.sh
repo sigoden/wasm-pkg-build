@@ -18,6 +18,7 @@ build() {
 # @cmd
 build-crate() {
     wasm-pack build $crate
+    cp $crate/package.json $crate/pkg
 }
 
 # @cmd

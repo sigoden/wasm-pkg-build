@@ -77,7 +77,7 @@ Also includes esm-async module, so it can run on the web without a bundler.
     "test_crate_bg.wasm.d.ts",
     "test_crate_bg.js",
     "test_crate.js",
-    "test_crate.d.ts"
+    "test_crate.d.ts",
     "test_crate_web.js",
     "test_crate_web.d.ts",
   ],

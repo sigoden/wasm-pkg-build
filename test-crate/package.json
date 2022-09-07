@@ -1,14 +1,17 @@
 {
   "name": "test-crate",
   "version": "0.1.0",
-  "files": [
-    "test_crate_bg.wasm",
-    "test_crate.js",
-    "test_crate_bg.js",
-    "test_crate.d.ts"
-  ],
   "main": "test_crate.js",
   "module": "test_crate_bg.js",
   "types": "test_crate.d.ts",
+  "files": [
+    "test_crate_bg.wasm",
+    "test_crate_bg.wasm.d.ts",
+    "test_crate_bg.js",
+    "test_crate.js",
+    "test_crate.d.ts",
+    "test_crate_web.js",
+    "test_crate_web.d.ts"
+  ],
   "sideEffects": false
 }
