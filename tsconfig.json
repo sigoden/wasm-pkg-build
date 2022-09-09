@@ -8,6 +8,7 @@
     "target": "es2018",
     "sourceMap": false,
     "outDir": "./dist",
+    "newLine": "lf",
     "baseUrl": "./src",
     "lib": ["ES2018"],
     "paths": {

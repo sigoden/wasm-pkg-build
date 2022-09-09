@@ -1,6 +1,6 @@
 {
   "name": "wasm-pack-utils",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "author": "sigoden <sigoden@gmail.com>",
   "description": "Utilities for wasm pack",
   "main": "./dist/index.js",
