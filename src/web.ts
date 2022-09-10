@@ -65,6 +65,7 @@ export default async function init(input) {
     if (cache.input === input && cache.module) {
       return cache.module;
     }
+    let input_ = input;
     const imports = getImports();
 
     ${generateLoadWasm(wasmFilename, wasmData)}
@@ -73,7 +74,7 @@ export default async function init(input) {
     ${wasmExportName} = instance.exports;
 ${memviews.map(v => `    ${v};`).join("\n")}
 
-    cache.input = input;
+    cache.input = input_;
     cache.module = imports["./${wasmFilename}.js"];
     return cache.module;
 }
