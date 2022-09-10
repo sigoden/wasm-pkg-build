@@ -12,7 +12,6 @@ export function transform(code: string, wasmData?: string) {
   const {
     ast,
     wasmFilename,
-    wbindgenExports
   } = transformAst(parse(code, { sourceType: 'module' }), Kind.Node);
 
   const middle = generate(ast).code
@@ -21,7 +20,6 @@ imports['./${wasmFilename}.js'] = module.exports;
 let wasm;
 const { TextDecoder, TextEncoder } = require(\`util\`);
 ${middle}
-${generate(types.program(wbindgenExports)).code}
 ${generateLoadWasm(wasmFilename, wasmData)}
 
 const wasmModule = new WebAssembly.Module(bytes);

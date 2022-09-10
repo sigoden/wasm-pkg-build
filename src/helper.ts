@@ -10,8 +10,7 @@ export enum Kind {
 export function transformAst(ast: ParseResult, kind: Kind) {
   let wasmFilename = '';
   let wasmExportName = '';
-  const wbindgenExports: types.ExpressionStatement[] = []
-  const exportNames: string[] = []
+  const exportNames: string[] = [];
   const memviews: string[] = [];
 
   traverse(ast, {
@@ -55,7 +54,6 @@ export function transformAst(ast: ParseResult, kind: Kind) {
             const right = types.functionExpression(null, declaration.params, declaration.body);
             const assign = types.assignmentExpression(("="), left, right);
             body.push(types.expressionStatement(assign));
-            // wbindgenExports.push(types.expressionStatement(assign));
             path.remove();
           }
         } else if (types.isClassDeclaration(declaration)) {
@@ -74,7 +72,7 @@ export function transformAst(ast: ParseResult, kind: Kind) {
       }
     }
   });
-  return { ast, wasmFilename, wasmExportName, wbindgenExports, exportNames, memviews };
+  return { ast, wasmFilename, wasmExportName, exportNames, memviews };
 }
 
 export function inlineWasm(wasmData: string, kind: Kind) {

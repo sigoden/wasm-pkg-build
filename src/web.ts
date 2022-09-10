@@ -60,17 +60,22 @@ async function load(module, imports) {
     }
 }
 
+let cache = {}
 export default async function init(input) {
+    if (cache.input === input && cache.module) {
+      return cache.module;
+    }
     const imports = getImports();
 
     ${generateLoadWasm(wasmFilename, wasmData)}
-    const { instance, module } = await load(await input, imports);
+    const { instance } = await load(await input, imports);
 
-    init.__${wasmExportName} = ${wasmExportName} = instance.exports;
-    init.__wbindgen_wasm_module = module;
+    ${wasmExportName} = instance.exports;
 ${memviews.map(v => `    ${v};`).join("\n")}
-    
-    return imports["./${wasmFilename}.js"];
+
+    cache.input = input;
+    cache.module = imports["./${wasmFilename}.js"];
+    return cache.module;
 }
   `;
 }
