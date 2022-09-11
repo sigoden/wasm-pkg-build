@@ -1,9 +1,11 @@
 import chalk from "chalk";
 import fs from "fs/promises";
 import cp from "child_process";
+import path from 'path';
+import os from 'os';
 
 export function debug(s: string) {
-  console.debug(chalk.blue("> " + s + "\n"));
+  console.debug(chalk.blue("> " + s));
 }
 
 export function info(s: string) {
@@ -107,4 +109,20 @@ export async function lock<O>(f: () => Promise<O>) {
       resolve();
     }
   }
+}
+
+export function getCacheDir(name: string) {
+    switch (process.platform) {
+    case "win32":
+        const localAppData = process.env.LOCALAPPDATA || path.join(os.homedir(), "AppData", "Local");
+        return path.join(localAppData, name, "Cache");
+
+    case "darwin":
+        return path.join(os.homedir(), "Library", "Caches", name);
+
+    // https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
+    default:
+        const cacheDir = process.env.XDG_CACHE_HOME || path.join(os.homedir(), ".cache");
+        return path.join(cacheDir, name);
+    }
 }

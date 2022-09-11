@@ -4,7 +4,7 @@ import path from 'path';
 import { Argv } from 'yargs';
 import yargs from 'yargs/yargs';
 import { BuildOptions, build, transformForNode, transformForWeb, transformForWorker } from './index';
-import { read, readString, write } from './utils';
+import { getCacheDir, read, readString, write } from './utils';
 
 yargs(process.argv.slice(2))
   .usage('$0 <cmd> [options]')
@@ -54,6 +54,11 @@ yargs(process.argv.slice(2))
       cargoArgs: argv.cargoArgs ? argv.cargoArgs.split(' ') : [],
       wasmBindgenArgs: argv.wasmBindgenArgs ? argv.wasmBindgenArgs.split(' ') : [],
       wasmOptArgs: argv.wasmOptArgs ? argv.wasmOptArgs.split(' ') : ['-O'],
+      install: {
+        cacheDir: getCacheDir('wasm-pack-utils'),
+        fetch: { timeout: 30000 },
+        verbose: !!argv.verbose,
+      }
     };
     build(options).catch(err => {
       console.error(err);

@@ -1,9 +1,7 @@
 import $path from 'path';
 import $toml from 'toml';
-import { exec, readString, spawn, info, debug, lock, mv } from './utils';
-
-const COMMAND_WASM_BINDGEN = "wasm-bindgen";
-const COMMAND_WASM_OPT = "wasm-opt";
+import { getWasmBindgen, getWasmOpt, InstallOptions } from './install';
+import { exec, readString, spawn, info, debug, lock, mv, getCacheDir } from './utils';
 
 export interface BuildOptions {
   dir: string,
@@ -14,6 +12,7 @@ export interface BuildOptions {
   wasmOptArgs: string[],
   verbose: boolean,
   debug: boolean,
+  install: InstallOptions,
 }
 
 export async function build(options: BuildOptions) {
@@ -112,6 +111,7 @@ async function runCargo(options: BuildOptions) {
 }
 
 async function runWasmBindgen(wasmPath: string, options: BuildOptions) {
+  const wasmBindgenCommand = await getWasmBindgen(options.install)
   let wasmBindgenArgs: string[] = [
     "--out-dir", $path.relative(options.dir, options.outDir),
     "--out-name", options.outName,
@@ -128,24 +128,25 @@ async function runWasmBindgen(wasmPath: string, options: BuildOptions) {
   }
 
   if (options.verbose) {
-    debug(`Running ${COMMAND_WASM_BINDGEN} ${wasmBindgenArgs.join(" ")}`);
+    debug(`Running ${wasmBindgenCommand} ${wasmBindgenArgs.join(" ")}`);
   }
 
-  await spawn(COMMAND_WASM_BINDGEN, wasmBindgenArgs, { cwd: options.dir, stdio: "inherit" });
+  await spawn(wasmBindgenCommand, wasmBindgenArgs, { cwd: options.dir, stdio: "inherit" });
 }
 
 async function runWasmOpt(options: BuildOptions) {
+  const wasmOptCommand = await getWasmOpt(options.install)
   const path = `${options.outName}_bg.wasm`;
   const tmp = `${options.outName}_bg_opt.wasm`;
 
   const wasmOptArgs = [...options.wasmOptArgs, "--output", tmp, path];
 
   if (options.verbose) {
-    debug(`Running ${COMMAND_WASM_OPT} ${wasmOptArgs.join(" ")}`);
+    debug(`Running ${wasmOptCommand} ${wasmOptArgs.join(" ")}`);
   }
 
   try {
-    await spawn(COMMAND_WASM_OPT, wasmOptArgs, { cwd: options.outDir, stdio: "inherit" });
+    await spawn(wasmOptCommand, wasmOptArgs, { cwd: options.outDir, stdio: "inherit" });
   } catch (e) {
     info("wasm-opt failed: " + e.message)
     return;

@@ -1,6 +1,6 @@
 import { parse, types } from '@babel/core';
 import generate from '@babel/generator';
-import { inlineWasm, Kind, transformAst } from './ast';
+import { inlineWasm, Kind, transformAst } from './helper';
 
 /**
  * Transform bundler bg.js to cjs module
@@ -8,7 +8,7 @@ import { inlineWasm, Kind, transformAst } from './ast';
  * @param wasmData - wasm code in base64
  * @returns Generated code
  */
-export function transformForNode(code: string, wasmData?: string) {
+export function transform(code: string, wasmData?: string) {
   const {
     ast,
     wasmFilename,

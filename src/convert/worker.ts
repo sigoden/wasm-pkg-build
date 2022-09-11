@@ -1,6 +1,6 @@
 import { parse } from '@babel/core';
 import generate from '@babel/generator';
-import { inlineWasm, transformAst, Kind } from './ast';
+import { inlineWasm, transformAst, Kind } from './helper';
 
 
 /**
@@ -9,7 +9,7 @@ import { inlineWasm, transformAst, Kind } from './ast';
  * @param wasmData - wasm code in base64
  * @returns Generated code
  */
-export function transformForWorker(code: string, wasmData: string) {
+export function transform(code: string, wasmData: string) {
   const {
     ast,
     wasmFilename,

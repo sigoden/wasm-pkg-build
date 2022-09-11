@@ -29,7 +29,10 @@
   "license": "MIT",
   "dependencies": {
     "@babel/core": "^7.18.13",
+    "axios": "^0.27.2",
+    "tar": "^6.1.11",
     "toml": "^3.0.0",
+    "which": "^2.0.2",
     "yargs": "^17.5.1"
   },
   "devDependencies": {
