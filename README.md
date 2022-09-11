@@ -1,11 +1,13 @@
 # wasm-pack-utils
 
-Use wasm-pack-utils to generate all kinds of wasm js modules (esm-bundler, cjs, esm-async, esm-sync) shares same wasm file.
+wasm-pack-utils is a alternative to wasm-pack.
+
+wasm-pack-utils generate all kinds of wasm js modules (esm-bundler, cjs, esm-async, esm-sync) shares same wasm file. 
 
 ## Install
 
 ```
-npm i wasm-pack-utils
+npm i -D wasm-pack-utils
 ```
 
 ## Get Started
@@ -16,25 +18,25 @@ WebAssembly has two initialization style: sync(`WebAssembly.Instance`) and async
 
 There is also an option to inline wasm into a single js file.
 
-So the js module containing wasm has the following module types:
+So the wasm js module has the following module types:
 
 | name        | sync | inline | target       | cli                                |
 | ----------- | ---- | ------ | ------------ | ---------------------------------- |
-| esm-bundler | -    | ✗      | -            | wasm-pack build                    |
+| esm-bundler | -    | ✗      | -            | wasm-pack-utils build              |
 | cjs         | ✓    | ✗      | node         | wasm-pack-utils node               |
 | cjs-inline  | ✓    | ✓      | node         | wasm-pack-utils node --inline-wasm |
 | esm-async   | ✗    | ✗      | web          | wasm-pack-utils web                |
 | esm-inline  | ✗    | ✓      | web          | wasm-pack-utils web --inline-wasm  |
 | esm-sync    | ✓    | ✓      | worker, node | wasm-pack-utils worker             |
 
+
 Generate cjs module:
 
 ```
 cd test-crate
-wasm-pack build
+wasm-pack-utils build
 wasm-pack-utils node pkg/test_crate_bg.js -o pkg/test_crate.js
 ```
-
 
 Import cjs/cjs-inline module:
 

@@ -17,7 +17,7 @@ build() {
 
 # @cmd
 build-crate() {
-    wasm-pack build $crate
+    ts-node src/bin.ts build $crate
     cp $crate/package.json $crate/pkg
 }
 

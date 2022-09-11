@@ -1,3 +1,4 @@
-export { transform as transformForNode } from "./node";
-export { transform as transformForWeb } from "./web";
-export { transform as transformForWorker } from "./worker";
+export { build, BuildOptions } from "./build";
+export { transformForNode } from "./node";
+export { transformForWeb } from "./web";
+export { transformForWorker } from "./worker";

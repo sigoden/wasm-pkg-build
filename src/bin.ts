@@ -1,34 +1,88 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const yargs = require('yargs/yargs')
-const { hideBin } = require('yargs/helpers')
+import path from 'path';
+import { Argv } from 'yargs';
+import yargs from 'yargs/yargs';
+import { BuildOptions, build, transformForNode, transformForWeb, transformForWorker } from './index';
+import { read, readString, write } from './utils';
 
-yargs(hideBin(process.argv))
-  .usage('$0 <cmd> [args]')
+yargs(process.argv.slice(2))
+  .usage('$0 <cmd> [options]')
+  .command('build [crate]', 'Build js package from wasm crate', (yargs) => {
+    return yargs
+      .positional('crate', {
+        type: 'string',
+        description: 'Path to wasm crate, must contains Cargo.toml'
+      })
+      .options('out-dir', {
+        type: 'string',
+        description: 'Output directory relative to crate. Defaults to `pkg`',
+      })
+      .options('out-name', {
+        type: 'string',
+        description: 'Set a custom output filename (Without extension), Defaults to crate name',
+      })
+      .options('cargo-args', {
+        type: 'string',
+        description: 'Extra args to pass to `cargo build`'
+      })
+      .options('wasm-bindgen-args', {
+        type: 'string',
+        description: 'Extra args to pass to `wasm-bindgen`',
+      })
+      .options('wasm-opt-args', {
+        type: 'string',
+        description: 'Extra args to pass to `wasm-opt`',
+      })
+      .options('verbose', {
+        type: 'boolean',
+        description: 'Whether to display extra compilation information in the console',
+      })
+      .options('debug', {
+        type: 'boolean',
+        description: 'Whether to build in debug mode or release mode'
+      })
+  }, (argv) => {
+    const dir = path.resolve(argv.crate ?? process.cwd());
+    const outDir = path.resolve(argv.outDir ?? path.resolve(dir, "pkg"));
+    const options: BuildOptions = {
+      dir,
+      outDir,
+      outName: argv.outName,
+      verbose: !!argv.verbose,
+      debug: !!argv.debug,
+      cargoArgs: argv.cargoArgs ? argv.cargoArgs.split(' ') : [],
+      wasmBindgenArgs: argv.wasmBindgenArgs ? argv.wasmBindgenArgs.split(' ') : [],
+      wasmOptArgs: argv.wasmOptArgs ? argv.wasmOptArgs.split(' ') : ['-O'],
+    };
+    build(options).catch(err => {
+      console.error(err);
+      process.exit(1);
+    })
+  })
   .command('node <target>', 'Generate cjs module for node', (yargs) => {
-    return commonOptions(yargs)
+    return convertOptions(yargs)
       .options('inline-wasm', {
         type: 'boolean',
         description: 'Inline wasm into generated js file',
       })
   }, (argv) => {
-    run(argv, require('./node'))
+    run(argv, transformForNode)
   })
   .command('web <target>', 'Generate esm-async module for web', (yargs) => {
-    return commonOptions(yargs)
+    return convertOptions(yargs)
       .options('inline-wasm', {
         type: 'boolean',
         description: 'Inline wasm into generated js file',
       })
   }, (argv) => {
-    run(argv, require('./web'))
+    run(argv, transformForWeb)
   })
   .command('worker <target>', 'Generate esm-sync module for worker', (yargs) => {
-    return commonOptions(yargs)
+    return convertOptions(yargs)
   }, (argv) => {
     argv.inlineWasm = true;
-    run(argv, require('./worker'))
+    run(argv, transformForWorker)
   })
   .help()
   .version()
@@ -37,22 +91,27 @@ yargs(hideBin(process.argv))
   .alias('v', 'version')
   .argv
 
-function run(argv, mod) {
-  let wasmData;
-  if (argv.inlineWasm) {
-    const wasmFile = argv.wasmFile || argv.target.replace(/.js$/, '.wasm');
-    const data = readFile(wasmFile);
-    wasmData = data.toString('base64');
-  }
-  const data = mod.transform(readFile(argv.target, 'utf8'), wasmData);
-  if (argv.output) {
-    writeFile(argv.output, data);
-  } else {
-    console.log(data);
+async function run(argv, transform) {
+  try {
+    let wasmData;
+    if (argv.inlineWasm) {
+      const wasmFile = argv.wasmFile || argv.target.replace(/.js$/, '.wasm');
+      const data = await read(wasmFile);
+      wasmData = data.toString('base64');
+    }
+    const data = transform(await readString(argv.target), wasmData);
+    if (argv.output) {
+      await write(argv.output, data);
+    } else {
+      console.log(data);
+    }
+  } catch (err) {
+    console.error(err)
+    process.exit(1);
   }
 }
 
-function commonOptions(yargs) {
+function convertOptions(yargs: Argv) {
   return yargs
     .positional('target', {
       type: 'string',
@@ -67,22 +126,4 @@ function commonOptions(yargs) {
       type: 'string',
       description: 'Specific wasm file path'
     })
-}
-
-function readFile(bundlerFile: string, encoding?: string) {
-  try {
-    return fs.readFileSync(bundlerFile, encoding);
-  } catch (err) {
-    console.log(`error: failed to read '${bundlerFile}', ${err.message}`);
-    process.exit(1);
-  }
-}
-
-function writeFile(targetFile: string, data: string) {
-  try {
-    fs.writeFileSync(targetFile, data);
-  } catch (err) {
-    console.log(`error: failed to write '${targetFile}', ${err.message}`);
-    process.exit(2);
-  }
 }
