@@ -1,6 +1,8 @@
 # wasm-build
 
-wasm-build generate all kinds of wasm js modules (esm-bundler, cjs, esm-async, esm-sync) shares same wasm file. 
+`wasm-build` build wasm js modules from wasm-bindgen crate.
+
+It can generate various wasm js modules (esm-bundler, cjs, esm, esm-inline, esm-sync) that share the same wasm file.
 
 ## Install
 

@@ -1,8 +1,8 @@
 {
   "name": "wasm-build",
-  "version": "0.1.11",
+  "version": "0.2.0",
   "author": "sigoden <sigoden@gmail.com>",
-  "description": "Utilities for wasm pack",
+  "description": "Build wasm js modules from wasm-bindgen crate",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": "./dist/bin.js",
