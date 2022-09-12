@@ -1,19 +1,19 @@
-# wasm-build
+# wasm-pkg-build
 
-`wasm-build` build wasm js modules from wasm-bindgen crate.
+`wasm-pkg-build` build wasm js pkg from wasm-bindgen crate.
 
 It can generate various wasm js modules (esm-bundler, cjs, esm, esm-inline, esm-sync) that share the same wasm file.
 
 ## Install
 
 ```
-npm i -D wasm-build
+npm i -D wasm-pkg-build
 ```
 
 ## CLI
 
 ```
-Usage: wasm-build [options] [crate]
+Usage: wasm-pkg-build [options] [crate]
 
 Generate wasm js modules from a wasm crate
 
@@ -37,13 +37,13 @@ Options:
 Generate a wasm js package
 
 ```
-wasm-build test-crate
+wasm-pkg-build test-crate
 ```
 
 Generate a wasm js package with all modules
 
 ```
-wasm-build test-crate --modules 'cjs,cjs-inline,esm,esm-inline,esm-sync' 
+wasm-pkg-build test-crate --modules 'cjs,cjs-inline,esm,esm-inline,esm-sync' 
 ```
 
 Will produce files

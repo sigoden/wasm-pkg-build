@@ -1,8 +1,8 @@
 {
-  "name": "wasm-build",
+  "name": "wasm-pkg-build",
   "version": "0.2.0",
   "author": "sigoden <sigoden@gmail.com>",
-  "description": "Build wasm js modules from wasm-bindgen crate",
+  "description": "Build wasm js pkg from wasm-bindgen crate",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": "./dist/bin.js",
@@ -24,7 +24,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/sigoden/wasm-build"
+    "url": "https://github.com/sigoden/wasm-pkg-build"
   },
   "license": "MIT",
   "dependencies": {
