@@ -6,7 +6,7 @@ crate=test-crate
 
 # @cmd
 run() {
-    ts-node src/bin.ts $@
+    npx ts-node src/bin.ts $@
 }
 
 # @cmd
@@ -17,7 +17,7 @@ build() {
 # @cmd
 test() {
     local name=${crate/-/_}
-    ts-node src/bin.ts $crate --modules cjs,esm,cjs-inline,esm-inline,esm-sync
+    npx ts-node src/bin.ts $crate --verbose --modules cjs,esm,cjs-inline,esm-inline,esm-sync
     cp $crate/package.json $crate/pkg
     cp $crate/pkg/${name}_worker.js $crate/pkg/${name}_worker.mjs
     node test-crate/test-node.js
