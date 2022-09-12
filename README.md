@@ -1,17 +1,17 @@
-# wasm-pack-utils
+# wasm-build
 
-wasm-pack-utils generate all kinds of wasm js modules (esm-bundler, cjs, esm-async, esm-sync) shares same wasm file. 
+wasm-build generate all kinds of wasm js modules (esm-bundler, cjs, esm-async, esm-sync) shares same wasm file. 
 
 ## Install
 
 ```
-npm i -D wasm-pack-utils
+npm i -D wasm-build
 ```
 
 ## CLI
 
 ```
-Usage: wasm-pack-utils [options] [crate]
+Usage: wasm-build [options] [crate]
 
 Generate wasm js modules from a wasm crate
 
@@ -35,13 +35,13 @@ Options:
 Generate a wasm js package
 
 ```
-wasm-pack-utils test-crate
+wasm-build test-crate
 ```
 
 Generate a wasm js package with all modules
 
 ```
-wasm-pack-utils test-crate --modules 'cjs,cjs-inline,esm,esm-inline,esm-sync' 
+wasm-build test-crate --modules 'cjs,cjs-inline,esm,esm-inline,esm-sync' 
 ```
 
 Will produce files

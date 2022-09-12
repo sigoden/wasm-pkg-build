@@ -34,7 +34,7 @@ program
       wasmBindgenArgs: opts.wasmBindgenArgs ? opts.wasmBindgenArgs.split(' ') : [],
       wasmOptArgs: opts.wasmOptArgs ? opts.wasmOptArgs.split(' ') : ['-O'],
       install: {
-        cacheDir: getCacheDir('wasm-pack-utils'),
+        cacheDir: getCacheDir('wasm-build'),
         fetch: { timeout: 30000 },
         verbose: !!opts.verbose,
       }

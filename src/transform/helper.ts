@@ -1,4 +1,4 @@
-import { ParseResult, traverse, NodePath, types } from '@babel/core';
+import { traverse, NodePath, types } from '@babel/core';
 import generate from '@babel/generator';
 
 export enum Kind {
@@ -7,7 +7,7 @@ export enum Kind {
   Worker,
 }
 
-export function transformAst(ast: ParseResult, kind: Kind) {
+export function transformAst(ast: any, kind: Kind) {
   let wasmFilename = '';
   let wasmExportName = '';
   const exportNames: string[] = [];

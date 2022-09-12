@@ -1,10 +1,10 @@
 {
-  "name": "wasm-pack-utils",
+  "name": "wasm-build",
   "version": "0.1.11",
   "author": "sigoden <sigoden@gmail.com>",
   "description": "Utilities for wasm pack",
   "main": "./dist/index.js",
-  "types": "./index.d.ts",
+  "types": "./dist/index.d.ts",
   "bin": "./dist/bin.js",
   "publishConfig": {
     "access": "public"
@@ -20,11 +20,11 @@
   "keywords": [
     "wasm-pack",
     "wasm",
-    "utils"
+    "build"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/sigoden/wasm-pack-utils"
+    "url": "https://github.com/sigoden/wasm-build"
   },
   "license": "MIT",
   "dependencies": {
