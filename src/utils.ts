@@ -79,38 +79,6 @@ export function wait(p): Promise<void> {
   });
 }
 
-const lockState = {
-  locked: false,
-  pending: [],
-};
-
-export async function lock<O>(f: () => Promise<O>) {
-  if (lockState.locked) {
-    await new Promise(function (resolve, reject) {
-      lockState.pending.push(resolve);
-    });
-
-    if (lockState.locked) {
-      throw new Error("Invalid lock state");
-    }
-  }
-
-  lockState.locked = true;
-
-  try {
-    return await f();
-
-  } finally {
-    lockState.locked = false;
-
-    if (lockState.pending.length !== 0) {
-      const resolve = lockState.pending.shift();
-      // Wake up pending task
-      resolve();
-    }
-  }
-}
-
 export function getCacheDir(name: string) {
     switch (process.platform) {
     case "win32":

@@ -1,134 +1,56 @@
 #!/usr/bin/env node
 
+import { Command, InvalidOptionArgumentError } from 'commander';
 import path from 'path';
-import { Argv } from 'yargs';
-import yargs from 'yargs/yargs';
-import { BuildOptions, build, transformForNode, transformForWeb, transformForWorker } from './index';
-import { getCacheDir, read, readString, write } from './utils';
+import { BuildOptions, build, SUPPORT_MODULES } from './index';
+import { getCacheDir } from './utils';
 
-yargs(process.argv.slice(2))
-  .usage('$0 <cmd> [options]')
-  .command('build [crate]', 'Build js package from wasm crate', (yargs) => {
-    return yargs
-      .positional('crate', {
-        type: 'string',
-        description: 'Path to wasm crate, must contains Cargo.toml'
-      })
-      .options('out-dir', {
-        type: 'string',
-        description: 'Output directory relative to crate. Defaults to `pkg`',
-      })
-      .options('out-name', {
-        type: 'string',
-        description: 'Set a custom output filename (Without extension), Defaults to crate name',
-      })
-      .options('cargo-args', {
-        type: 'string',
-        description: 'Extra args to pass to `cargo build`'
-      })
-      .options('wasm-bindgen-args', {
-        type: 'string',
-        description: 'Extra args to pass to `wasm-bindgen`',
-      })
-      .options('wasm-opt-args', {
-        type: 'string',
-        description: 'Extra args to pass to `wasm-opt`',
-      })
-      .options('verbose', {
-        type: 'boolean',
-        description: 'Whether to display extra compilation information in the console',
-      })
-      .options('debug', {
-        type: 'boolean',
-        description: 'Whether to build in debug mode or release mode'
-      })
-  }, (argv) => {
-    const dir = path.resolve(argv.crate ?? process.cwd());
-    const outDir = path.resolve(argv.outDir ?? path.resolve(dir, "pkg"));
+const program = new Command();
+
+program
+  .description('Generate wasm js modules from a wasm crate')
+  .argument('[crate]', 'path to a wasm crate [default: <cwd>]')
+  .option('--out-dir <dir>', 'output directory relative to crate [default: <crate>/pkg]')
+  .option('--out-name <var>', 'set a custom output filename (Without extension) [default: <crate_name>]')
+  .option('--verbose', 'whether to display extra compilation information in the console')
+  .option('--debug', 'whether to build in debug mode or release mode')
+  .option('--cargo-args <args>', `extra args to pass to 'cargo build'`)
+  .option('--wasm-bindgen-args <args>', `extra args to pass to 'wasm-bindgen'`)
+  .option('--wasm-opt-args <args>', `extra args to pass to 'wasm-opt'`)
+  .option('--modules <modules>', `generate additional js modules(cjs,cjs-inline,esm,esm-inline,esm-sync) [default: 'cjs,esm']`, parseModules)
+  .version(require('../package.json').version)
+  .action(crate => {
+    const opts = program.opts();
+    const dir = path.resolve(crate ?? process.cwd());
+    const outDir = path.resolve(opts.outDir ?? path.resolve(dir, "pkg"));
     const options: BuildOptions = {
       dir,
       outDir,
-      outName: argv.outName,
-      verbose: !!argv.verbose,
-      debug: !!argv.debug,
-      cargoArgs: argv.cargoArgs ? argv.cargoArgs.split(' ') : [],
-      wasmBindgenArgs: argv.wasmBindgenArgs ? argv.wasmBindgenArgs.split(' ') : [],
-      wasmOptArgs: argv.wasmOptArgs ? argv.wasmOptArgs.split(' ') : ['-O'],
+      outName: opts.outName,
+      verbose: !!opts.verbose,
+      debug: !!opts.debug,
+      modules: opts.modules ?? ['cjs', 'esm'],
+      cargoArgs: opts.cargoArgs ? opts.cargoArgs.split(' ') : [],
+      wasmBindgenArgs: opts.wasmBindgenArgs ? opts.wasmBindgenArgs.split(' ') : [],
+      wasmOptArgs: opts.wasmOptArgs ? opts.wasmOptArgs.split(' ') : ['-O'],
       install: {
         cacheDir: getCacheDir('wasm-pack-utils'),
         fetch: { timeout: 30000 },
-        verbose: !!argv.verbose,
+        verbose: !!opts.verbose,
       }
     };
     build(options).catch(err => {
-      console.error(err);
+      console.log(err?.message ?? err);
       process.exit(1);
     })
   })
-  .command('node <target>', 'Generate cjs module for node', (yargs) => {
-    return convertOptions(yargs)
-      .options('inline-wasm', {
-        type: 'boolean',
-        description: 'Inline wasm into generated js file',
-      })
-  }, (argv) => {
-    run(argv, transformForNode)
-  })
-  .command('web <target>', 'Generate esm-async module for web', (yargs) => {
-    return convertOptions(yargs)
-      .options('inline-wasm', {
-        type: 'boolean',
-        description: 'Inline wasm into generated js file',
-      })
-  }, (argv) => {
-    run(argv, transformForWeb)
-  })
-  .command('worker <target>', 'Generate esm-sync module for worker', (yargs) => {
-    return convertOptions(yargs)
-  }, (argv) => {
-    argv.inlineWasm = true;
-    run(argv, transformForWorker)
-  })
-  .help()
-  .version()
-  .demandCommand()
-  .alias('h', 'help')
-  .alias('v', 'version')
-  .argv
+  .parse()
 
-async function run(argv, transform) {
-  try {
-    let wasmData;
-    if (argv.inlineWasm) {
-      const wasmFile = argv.wasmFile || argv.target.replace(/.js$/, '.wasm');
-      const data = await read(wasmFile);
-      wasmData = data.toString('base64');
-    }
-    const data = transform(await readString(argv.target), wasmData);
-    if (argv.output) {
-      await write(argv.output, data);
-    } else {
-      console.log(data);
-    }
-  } catch (err) {
-    console.error(err)
-    process.exit(1);
+function parseModules(value: string) {
+  const modules = value.split(',').map(v => v.trim());
+  const unsupportedModules = modules.filter(v => SUPPORT_MODULES.indexOf(v) === -1);
+  if (unsupportedModules.length > 0) {
+    throw new InvalidOptionArgumentError(`Unsupported '${unsupportedModules.join(',')}'`);
   }
-}
-
-function convertOptions(yargs: Argv) {
-  return yargs
-    .positional('target', {
-      type: 'string',
-      description: 'A js file generated by wasm-pack with _bg.js suffix'
-    })
-    .options('output', {
-      alias: 'o',
-      type: 'string',
-      description: 'Sets the output js file path',
-    })
-    .options('wasm-file', {
-      type: 'string',
-      description: 'Specific wasm file path'
-    })
+  return modules;
 }

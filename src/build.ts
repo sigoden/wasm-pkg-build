@@ -1,12 +1,14 @@
 import $path from 'path';
 import $toml from 'toml';
+import { transform } from './transform';
 import { getWasmBindgen, getWasmOpt, InstallOptions } from './install';
-import { exec, readString, spawn, info, debug, lock, mv, getCacheDir } from './utils';
+import { exec, readString, spawn, info, debug, mv, write, read, exists } from './utils';
 
 export interface BuildOptions {
   dir: string,
   outDir: string,
   outName: string,
+  modules: string[],
   cargoArgs: string[],
   wasmBindgenArgs: string[],
   wasmOptArgs: string[],
@@ -17,6 +19,9 @@ export interface BuildOptions {
 
 export async function build(options: BuildOptions) {
   const cargoTomlPath = $path.resolve(options.dir, 'Cargo.toml');
+  if (!await exists(cargoTomlPath)) {
+    throw new Error(`crate directory '${options.dir}' don't contain 'Cargo.toml'`)
+  }
 
   const [targetDir, cargoToml] = await Promise.all([
     getTargetDir(options.dir),
@@ -40,44 +45,33 @@ async function compileRust(targetDir: string, cargoToml: string, options: BuildO
   const name: string = toml.package.name.replace(/\-/g, "_");
   if (!options.outName) options.outName = name;
 
-  try {
-    return await lock(async function () {
-      if (options.verbose) {
-        debug(`Using target directory ${targetDir}`);
-      }
-
-      await runCargo(options);
-
-      const wasmPath = $path.resolve($path.join(
-        targetDir,
-        "wasm32-unknown-unknown",
-        (options.debug ? "debug" : "release"),
-        name + ".wasm"
-      ));
-
-      if (options.verbose) {
-        debug(`Generate ${wasmPath}`);
-        debug(`Using output directory ${options.outDir}`);
-      }
-
-      await runWasmBindgen(wasmPath, options);
-
-      if (!options.debug) {
-        await runWasmOpt(options);
-      }
-      return name;
-    });
-
-  } catch (e) {
-    if (options.verbose) {
-      throw e;
-
-    } else {
-      const e = new Error("Rust compilation failed");
-      e.stack = null;
-      throw e;
-    }
+  if (options.verbose) {
+    debug(`Using target directory ${targetDir}`);
   }
+
+  await runCargo(options);
+
+  const wasmPath = $path.resolve($path.join(
+    targetDir,
+    "wasm32-unknown-unknown",
+    (options.debug ? "debug" : "release"),
+    name + ".wasm"
+  ));
+
+  if (options.verbose) {
+    debug(`Generate ${wasmPath}`);
+    debug(`Using output directory ${options.outDir}`);
+  }
+
+  await runWasmBindgen(wasmPath, options);
+
+  if (!options.debug) {
+    await runWasmOpt(options);
+  }
+
+  generateModules(options);
+
+  return name;
 }
 
 function validateToml(toml) {
@@ -153,4 +147,38 @@ async function runWasmOpt(options: BuildOptions) {
   }
 
   await mv($path.join(options.outDir, tmp), $path.join(options.outDir, path));
+}
+
+async function generateModules(options: BuildOptions) {
+  const { outDir, outName, modules, verbose } = options;
+  const resolveFile = v => $path.resolve(outDir, v);
+  const [code, wasm] = await Promise.all([
+    readString($path.resolve(outDir, `${outName}_bg.js`)),
+    read(resolveFile(`${outName}_bg.wasm`)).then(v => v.toString('base64')),
+  ]);
+  await Promise.all(modules.map(async mod => {
+    if (mod === 'cjs') {
+      const modPath = resolveFile(`${outName}.js`);
+      await write(modPath, transform(mod, code, wasm));
+      if (verbose) debug(`Generate ${mod} to ${modPath}`);
+    } else if (mod === 'cjs-inline') {
+      const name: string = modules.indexOf('cjs') === -1 ? `${outName}.js` : `${outName}_inline.js`;
+      const modPath = resolveFile(name);
+      await write(modPath, transform(mod, code, wasm));
+      if (verbose) debug(`Generate ${mod} to ${modPath}`);
+    } else if (mod === 'esm') {
+      const modPath = resolveFile(`${outName}_web.js`);
+      await write(modPath, transform(mod, code, wasm));
+      if (verbose) debug(`Generate ${mod} to ${modPath}`);
+    } else if (mod === 'esm-inline') {
+      let name: string = modules.indexOf('esm') === -1 ? `${outName}_web.js` : `${outName}_web_inline.js`;
+      const modPath = resolveFile(name);
+      await write(modPath, transform(mod, code, wasm));
+      if (verbose) debug(`Generate ${mod} to ${modPath}`);
+    } else if (mod === 'esm-sync') {
+      const modPath = resolveFile(`${outName}_worker.js`);
+      await write(modPath, transform(mod, code, wasm));
+      if (verbose) debug(`Generate ${mod} to ${modPath}`);
+    }
+  }));
 }
