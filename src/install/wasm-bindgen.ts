@@ -1,17 +1,12 @@
-import { InstallOptions, getOrInstall, getLatestVersion } from './helper';
-import which from 'which';
+import { InstallOptions, getOrInstall } from './helper';
 
-export async function getWasmBindgen(options: InstallOptions) {
-  try {
-    return await which('wasm-bindgen')
-  } catch {}
-  const [url, exePath] = await getUrlAndExePath('rustwasm', 'wasm-bindgen');
+export async function getWasmBindgen(options: InstallOptions, version: string) {
+  const [url, exePath] = await getUrlAndExePath('rustwasm', 'wasm-bindgen', version);
   return getOrInstall(url, exePath, options);
 }
 
-async function getUrlAndExePath(author: string, name: string) {
+async function getUrlAndExePath(author: string, name: string, version: string) {
   const { arch, platform } = process;
-  const version = await getLatestVersion(author, name);
   const baseURL = `https://github.com/${author}/${name}/releases/download/${version}`;
 
   switch (platform) {

@@ -105,7 +105,7 @@ async function runCargo(options: BuildOptions) {
 }
 
 async function runWasmBindgen(wasmPath: string, options: BuildOptions) {
-  const wasmBindgenCommand = await getWasmBindgen(options.install)
+  const wasmBindgenCommand = await getWasmBindgen(options.install, await getWasmBindgenVersion(options))
   let wasmBindgenArgs: string[] = [
     "--out-dir", $path.relative(options.dir, options.outDir),
     "--out-name", options.outName,
@@ -126,6 +126,21 @@ async function runWasmBindgen(wasmPath: string, options: BuildOptions) {
   }
 
   await spawn(wasmBindgenCommand, wasmBindgenArgs, { cwd: options.dir, stdio: "inherit" });
+}
+
+const VERSION_REGEXP = /([\d\.]+)[\r\n]*$/;
+
+async function getWasmBindgenVersion(options: BuildOptions) {
+    const pkg_spec = await exec("cargo pkgid wasm-bindgen", { cwd: options.dir });
+
+    const version = VERSION_REGEXP.exec(pkg_spec);
+
+    if (version) {
+        return version[1];
+
+    } else {
+        throw new Error("Could not determine wasm-bindgen version");
+    }
 }
 
 async function runWasmOpt(options: BuildOptions) {

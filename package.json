@@ -1,6 +1,6 @@
 {
   "name": "wasm-pkg-build",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": "sigoden <sigoden@gmail.com>",
   "description": "Build wasm js pkg from wasm-bindgen crate",
   "main": "./dist/index.js",
@@ -32,8 +32,7 @@
     "axios": "^0.27.2",
     "commander": "^9.4.0",
     "tar": "^6.1.11",
-    "toml": "^3.0.0",
-    "which": "^2.0.2"
+    "toml": "^3.0.0"
   },
   "devDependencies": {
     "@types/babel__core": "^7.1.19",

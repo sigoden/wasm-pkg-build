@@ -1,10 +1,6 @@
 import { getLatestVersion, getOrInstall, InstallOptions } from "./helper";
-import which from 'which';
 
 export async function getWasmOpt(options: InstallOptions) {
-  try {
-    return await which('wasm-opt')
-  } catch {}
   const [url, exePath] =  await getUrlAndExePath('WebAssembly', 'binaryen', 'wasm-opt');
   return getOrInstall(url, exePath, options);
 }

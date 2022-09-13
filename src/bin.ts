@@ -35,12 +35,12 @@ program
       wasmOptArgs: opts.wasmOptArgs ? opts.wasmOptArgs.split(' ') : ['-O'],
       install: {
         cacheDir: getCacheDir('wasm-pkg-build'),
-        fetch: { timeout: 30000 },
+        fetch: { timeout: 60000 },
         verbose: !!opts.verbose,
       }
     };
     build(options).catch(err => {
-      console.log(err?.message ?? err);
+      console.error(err.message);
       process.exit(1);
     })
   })
