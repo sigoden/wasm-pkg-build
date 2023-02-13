@@ -167,6 +167,7 @@ async function runWasmOpt(options: BuildOptions) {
 async function generateModules(options: BuildOptions) {
   const { outDir, outName, modules, verbose } = options;
   const resolveFile = v => $path.resolve(outDir, v);
+  const wasmFilename = `${outName}_bg`;
   const [code, wasm] = await Promise.all([
     readString($path.resolve(outDir, `${outName}_bg.js`)),
     read(resolveFile(`${outName}_bg.wasm`)).then(v => v.toString('base64')),
@@ -174,25 +175,25 @@ async function generateModules(options: BuildOptions) {
   await Promise.all(modules.map(async mod => {
     if (mod === 'cjs') {
       const modPath = resolveFile(`${outName}.js`);
-      await write(modPath, transform(mod, code, wasm));
+      await write(modPath, transform(mod, wasmFilename, code, wasm));
       if (verbose) debug(`Generate ${mod} to ${modPath}`);
     } else if (mod === 'cjs-inline') {
       const name: string = modules.indexOf('cjs') === -1 ? `${outName}.js` : `${outName}_inline.js`;
       const modPath = resolveFile(name);
-      await write(modPath, transform(mod, code, wasm));
+      await write(modPath, transform(mod, wasmFilename, code, wasm));
       if (verbose) debug(`Generate ${mod} to ${modPath}`);
     } else if (mod === 'esm') {
       const modPath = resolveFile(`${outName}_web.js`);
-      await write(modPath, transform(mod, code, wasm));
+      await write(modPath, transform(mod, wasmFilename, code, wasm));
       if (verbose) debug(`Generate ${mod} to ${modPath}`);
     } else if (mod === 'esm-inline') {
       let name: string = modules.indexOf('esm') === -1 ? `${outName}_web.js` : `${outName}_web_inline.js`;
       const modPath = resolveFile(name);
-      await write(modPath, transform(mod, code, wasm));
+      await write(modPath, transform(mod, wasmFilename, code, wasm));
       if (verbose) debug(`Generate ${mod} to ${modPath}`);
     } else if (mod === 'esm-sync') {
       const modPath = resolveFile(`${outName}_worker.js`);
-      await write(modPath, transform(mod, code, wasm));
+      await write(modPath, transform(mod, wasmFilename, code, wasm));
       if (verbose) debug(`Generate ${mod} to ${modPath}`);
     }
   }));

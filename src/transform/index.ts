@@ -5,18 +5,18 @@ import { transform as transformCJS } from "./cjs";
 import { transform as transformESM } from "./esm";
 import { transform as transformESMSync } from "./esm-sync";
 
-export function transform(module: string, code: string, wasmData?: string) {
+export function transform(module: string, wasmFilename, code: string, wasmData?: string) {
   switch (module) {
     case 'cjs':
-      return transformCJS(code);
+      return transformCJS(wasmFilename, code);
     case 'cjs-inline':
-      return transformCJS(code, wasmData);
+      return transformCJS(wasmFilename, code, wasmData);
     case 'esm':
-      return transformESM(code);
+      return transformESM(wasmFilename, code);
     case 'esm-inline':
-      return transformESM(code, wasmData);
+      return transformESM(wasmFilename, code, wasmData);
     case 'esm-sync':
-      return transformESMSync(code, wasmData);
+      return transformESMSync(wasmFilename, code, wasmData);
     default:
       throw new Error(`Unsupported module ${module}`);
   }

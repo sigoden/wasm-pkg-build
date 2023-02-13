@@ -4,15 +4,15 @@ import { inlineWasm, Kind, transformAst } from './helper';
 
 /**
  * Transform bundler bg.js to cjs module
+ * @param wasmFilename - wasm file name e.g. test_crate_bg
  * @param code - source code
  * @param wasmData - wasm code in base64
  * @returns Generated code
  */
-export function transform(code: string, wasmData?: string) {
+export function transform(wasmFilename: string, code: string, wasmData?: string) {
   const {
     ast,
-    wasmFilename,
-  } = transformAst(parse(code, { sourceType: 'module' }), Kind.Node);
+  } = transformAst(code, Kind.Node);
 
   const middle = generate(ast).code
   return `let imports = {};

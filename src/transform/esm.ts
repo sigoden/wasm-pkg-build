@@ -1,22 +1,21 @@
-import { parse } from '@babel/core';
 import generate from '@babel/generator';
 import { inlineWasm, transformAst, Kind } from './helper';
 
 
 /**
  * Transform bundler bg.js to esm-async module
+ * @param wasmFilename - wasm file name e.g. test_crate_bg
  * @param code - source code
  * @param wasmData - wasm code in base64
  * @returns Generated code
  */
-export function transform(code: string, wasmData?: string) {
+export function transform(wasmFilename: string, code: string, wasmData?: string) {
   const {
     ast,
-    wasmFilename,
     wasmExportName,
     exportNames,
     memviews,
-  } = transformAst(parse(code, { sourceType: 'module' }), Kind.Web);
+  } = transformAst(code, Kind.Web);
 
   const middle = generate(ast).code;
   return `

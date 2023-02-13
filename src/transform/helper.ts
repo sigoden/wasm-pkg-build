@@ -1,5 +1,23 @@
-import { traverse, NodePath, types } from '@babel/core';
+/**
+ * Transform Helper
+ * 
+ * The main differences between the generated _bg.js files are listed below
+ * 
+ * 1. < 0.2.83
+ * import * as wasm from './<name>.wasm'
+ * 
+ * 2. >- now
+ *  
+ * let wasm;
+ * export function __wbg_set_wasm(val) {
+ *     wasm = val;
+ * }
+ * 
+ */
+
+import { parse, traverse, NodePath, types } from '@babel/core';
 import generate from '@babel/generator';
+import os from "os";
 
 export enum Kind {
   Node,
@@ -7,9 +25,19 @@ export enum Kind {
   Worker,
 }
 
-export function transformAst(ast: any, kind: Kind) {
-  let wasmFilename = '';
+export function transformAst(code: string, kind: Kind) {
   let wasmExportName = '';
+  if (code.startsWith("import * as wasm")) {
+    code = code.split(os.EOL).slice(1).join(os.EOL);
+    wasmExportName = "wasm";
+  } else if (code.startsWith("let wasm;")) {
+    code = code.split(os.EOL).slice(4).join(os.EOL);
+    wasmExportName = "wasm";
+  } else {
+    throw new Error("Your current wasm-bindgen is not supported yet")
+  }
+
+  const ast = parse(code, { sourceType: 'module' })
   const exportNames: string[] = [];
   const memviews: string[] = [];
 
@@ -34,13 +62,6 @@ export function transformAst(ast: any, kind: Kind) {
               memviews.push(`${id.name} = ${stringifyAst(path.node.init)}`);
             }
           }
-        }
-      } else if (path.isImportDeclaration()) {
-        let source: string = (path.node as any).source.value;
-        if (source.endsWith(".wasm")) {
-          wasmExportName = (path.node.specifiers[0] as any).local.name
-          wasmFilename = source.slice(2, -5);
-          path.remove();
         }
       } else if (path.isExportNamedDeclaration()) {
         const declaration = path.node.declaration;
@@ -72,7 +93,7 @@ export function transformAst(ast: any, kind: Kind) {
       }
     }
   });
-  return { ast, wasmFilename, wasmExportName, exportNames, memviews };
+  return { ast, wasmExportName, exportNames, memviews };
 }
 
 export function inlineWasm(wasmData: string, kind: Kind) {

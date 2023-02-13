@@ -5,17 +5,17 @@ import { inlineWasm, transformAst, Kind } from './helper';
 
 /**
  * Transform bundler bg.js to esm-sync module
+ * @param wasmFilename - wasm file name e.g. test_crate_bg
  * @param code - source code
  * @param wasmData - wasm code in base64
  * @returns Generated code
  */
-export function transform(code: string, wasmData: string) {
+export function transform(wasmFilename: string, code: string, wasmData?: string) {
   const {
     ast,
-    wasmFilename,
     wasmExportName,
     exportNames,
-  } = transformAst(parse(code, { sourceType: 'module' }), Kind.Worker);
+  } = transformAst(code, Kind.Worker);
 
   const middle = generate(ast).code;
   return `
