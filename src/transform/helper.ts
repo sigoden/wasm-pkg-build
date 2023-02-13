@@ -16,8 +16,8 @@
  */
 
 import { parse, traverse, NodePath, types } from '@babel/core';
+import * as t from '@babel/types';
 import generate from '@babel/generator';
-import os from "os";
 
 export enum Kind {
   Node,
@@ -28,16 +28,16 @@ export enum Kind {
 export function transformAst(code: string, kind: Kind) {
   let wasmExportName = '';
   if (code.startsWith("import * as wasm")) {
-    code = code.split(os.EOL).slice(1).join(os.EOL);
+    code = code.split("\n").slice(1).join("\n");
     wasmExportName = "wasm";
   } else if (code.startsWith("let wasm;")) {
-    code = code.split(os.EOL).slice(4).join(os.EOL);
+    code = code.split("\n").slice(4).join("\n");
     wasmExportName = "wasm";
   } else {
     throw new Error("Your current wasm-bindgen is not supported yet")
   }
 
-  const ast = parse(code, { sourceType: 'module' })
+  const ast = parse(code, { sourceType: 'module' }) as t.Node
   const exportNames: string[] = [];
   const memviews: string[] = [];
 
