@@ -20,11 +20,17 @@ async function getUrlAndExePath(author: string, name: string, version: string) {
       if (arch === 'x64') {
         const fileName = `${name}-${version}-x86_64-apple-darwin`;
         return [`${baseURL}/${fileName}.tar.gz`, `${fileName}/${name}`];
+      } else if (arch == 'arm64') {
+        const fileName = `${name}-${version}-aarch64-apple-darwin`;
+        return [`${baseURL}/${fileName}.tar.gz`, `${fileName}/${name}`];
       }
       break;
     case 'linux':
       if (arch === 'x64') {
         const fileName = `${name}-${version}-x86_64-unknown-linux-musl`;
+        return [`${baseURL}/${fileName}.tar.gz`, `${fileName}/${name}`];
+      } else if (arch == 'arm64') {
+        const fileName = `${name}-${version}-aarch64-unknown-linux-gnu`;
         return [`${baseURL}/${fileName}.tar.gz`, `${fileName}/${name}`];
       }
       break;

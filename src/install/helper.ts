@@ -38,7 +38,7 @@ export async function getOrInstall(url: string, exePath: string, options: Instal
     .then(res => {
       return new Promise<void>((resolve, reject) => {
         const sink = res.data.pipe(
-          tar.x({ C: options.cacheDir, filter: path => path === exePath })
+          tar.x({ C: options.cacheDir })
         );
         sink.on("finish", () => resolve());
         sink.on("error", err => reject(err));
