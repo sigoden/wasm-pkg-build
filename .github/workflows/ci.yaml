@@ -41,7 +41,6 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: '16'
-        cache: 'yarn'
 
     - run: corepack enable
 
@@ -50,5 +49,5 @@ jobs:
         owner: sigoden
         name: runme
 
-    - run: yarn
+    - run: npm install
     - run: runme test

@@ -13,9 +13,8 @@ jobs:
         with:
           node-version: '16.x'
           registry-url: 'https://registry.npmjs.org'
-          cache: 'yarn'
       - run: corepack enable
-      - run: yarn install --frozen-lockfile
-      - run: yarn publish
+      - run: npm install
+      - run: npm publish
         env:
           NODE_AUTH_TOKEN : ${{ secrets.NPM_TOKEN }}
