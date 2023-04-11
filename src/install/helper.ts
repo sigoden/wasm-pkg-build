@@ -1,6 +1,6 @@
 
 import path, { join } from 'path';
-import axios, { AxiosRequestConfig } from 'axios';
+import axios, { Axios, AxiosRequestConfig } from 'axios';
 import tar from 'tar';
 import { exists, mkdir, debug } from '../utils';
 
@@ -12,7 +12,11 @@ export interface InstallOptions {
 
 export async function getLatestVersion(author: string, name: string, command?: string) {
   try {
-    const res = await axios.get(`https://api.github.com/repos/${author}/${name}/releases/latest`)
+    let opts: AxiosRequestConfig = {};
+    if (process.env["GITHUB_TOKEN"]) {
+      opts.headers = { "Authorization": `token ${process.env["GITHUB_TOKEN"]}` };
+    }
+    const res = await axios.get(`https://api.github.com/repos/${author}/${name}/releases/latest`, opts)
     return res.data.tag_name
   } catch (err) {
     throw new Error(`Failed to get latest version of '${command ?? name}', ${err?.message || err}`);
