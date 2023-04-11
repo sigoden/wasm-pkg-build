@@ -48,7 +48,8 @@ jobs:
       with:
         owner: sigoden
         name: argc
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - run: npm install
     - run: argc test
