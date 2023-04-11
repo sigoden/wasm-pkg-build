@@ -7,7 +7,8 @@
  * import * as wasm from './<name>.wasm'
  * 
  * 2. >- now
- *  
+ * 
+ * [const l... = ...;]
  * let wasm;
  * export function __wbg_set_wasm(val) {
  *     wasm = val;
@@ -30,8 +31,9 @@ export function transformAst(code: string, kind: Kind) {
   if (code.startsWith("import * as wasm")) {
     code = code.split("\n").slice(1).join("\n");
     wasmExportName = "wasm";
-  } else if (code.startsWith("let wasm;")) {
-    code = code.split("\n").slice(4).join("\n");
+  } else if (code.match(/^let wasm;$/m)) {
+    // Remove the wasm export
+    code = code.replace(/let wasm;\nexport function __wbg_set_wasm\(val\) {\n    wasm = val;\n}\n/, "")
     wasmExportName = "wasm";
   } else {
     throw new Error("Your current wasm-bindgen is not supported yet")
