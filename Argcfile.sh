@@ -24,4 +24,4 @@ test() {
     node test-crate/test-worker.mjs
 }
 
-eval $(runme --runme-eval "$0" "$@")
+eval "$(argc --argc-eval "$0" "$@")"

@@ -47,7 +47,7 @@ jobs:
     - uses: extractions/setup-crate@v1
       with:
         owner: sigoden
-        name: runme
+        name: argc
 
     - run: npm install
-    - run: runme test
+    - run: argc test
