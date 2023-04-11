@@ -14,8 +14,8 @@ export async function getLatestVersion(author: string, name: string, command?: s
   try {
     const res = await axios.get(`https://api.github.com/repos/${author}/${name}/releases/latest`)
     return res.data.tag_name
-  } catch {
-    throw new Error(`Failed to get latest version of '${command ?? name}'`);
+  } catch (err) {
+    throw new Error(`Failed to get latest version of '${command ?? name}', ${err?.message || err}`);
   }
 }
 
