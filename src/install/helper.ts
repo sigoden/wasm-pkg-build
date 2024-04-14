@@ -1,7 +1,7 @@
 
 import path, { join } from 'path';
-import axios, { Axios, AxiosRequestConfig } from 'axios';
-import tar from 'tar';
+import axios, { AxiosRequestConfig } from 'axios';
+import * as tar from 'tar';
 import { exists, mkdir, debug } from '../utils';
 
 export interface InstallOptions {
