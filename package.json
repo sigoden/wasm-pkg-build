@@ -1,6 +1,6 @@
 {
   "name": "wasm-pkg-build",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "author": "sigoden <sigoden@gmail.com>",
   "description": "Build wasm js pkg from wasm-bindgen crate",
   "main": "./dist/index.js",
