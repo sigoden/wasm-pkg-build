@@ -116,7 +116,7 @@ Options:
   --cargo-args <args>         extra args to pass to 'cargo build'
   --wasm-bindgen-args <args>  extra args to pass to 'wasm-bindgen'
   --wasm-opt-args <args>      extra args to pass to 'wasm-opt'
-  --wasm-opt-version <ver>    specify the version of 'wasm-opt'
+  --wasm-opt-version <ver>    specify the version of 'wasm-opt' [default: latest]
   --modules <modules>         generate additional js modules(cjs,cjs-inline,esm,esm-inline,esm-sync) [default: 'cjs,esm']
   -V, --version               output the version number
   -h, --help                  display help for command
