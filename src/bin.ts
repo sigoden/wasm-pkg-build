@@ -40,7 +40,7 @@ program
       }
     };
     build(options).catch(err => {
-      console.error(err.message);
+      console.error(err.message || err);
       process.exit(1);
     })
   })

@@ -33,7 +33,7 @@ export async function build(options: BuildOptions) {
 
 async function getTargetDir(dir: string) {
   const metadata = await exec("cargo metadata --format-version 1 --no-deps --color never", { cwd: dir });
-  return JSON.parse(metadata).target_directory;
+  return JSON.parse(metadata.stdout.toString()).target_directory;
 }
 
 
@@ -133,7 +133,7 @@ const VERSION_REGEXP = /([\d\.]+)[\r\n]*$/;
 async function getWasmBindgenVersion(options: BuildOptions) {
     const pkg_spec = await exec("cargo pkgid wasm-bindgen", { cwd: options.dir });
 
-    const version = VERSION_REGEXP.exec(pkg_spec);
+    const version = VERSION_REGEXP.exec(pkg_spec.stdout.toString());
 
     if (version) {
         return version[1];
