@@ -1,13 +1,17 @@
 import { getLatestVersion, getOrInstall, InstallOptions } from "./helper";
 
-export async function getWasmOpt(options: InstallOptions) {
-  const [url, exePath] =  await getUrlAndExePath('WebAssembly', 'binaryen', 'wasm-opt');
+export async function getWasmOpt(options: InstallOptions, version?: string) {
+  if (!version || version == "latest") {
+    version = await getLatestVersion('WebAssembly', 'binaryen', 'wasm-opt');
+  }  else if (/^\d+$/.test(version)) {
+    version = "version_" + version;
+  }
+  const [url, exePath] =  await getUrlAndExePath('WebAssembly', 'binaryen', version);
   return getOrInstall(url, exePath, options);
 }
 
-async function getUrlAndExePath(author: string, name: string, command: string) {
+async function getUrlAndExePath(author: string, name: string, version: string) {
   const { arch, platform } = process;
-  const version = await getLatestVersion(author, name, command);
   const baseURL = `https://github.com//${author}/${name}/releases/download/${version}`;
   const execPath = `${name}-${version}/bin/wasm-opt`;
 

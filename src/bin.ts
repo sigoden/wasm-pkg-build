@@ -18,6 +18,7 @@ program
   .option('--cargo-args <args>', `extra args to pass to 'cargo build'`)
   .option('--wasm-bindgen-args <args>', `extra args to pass to 'wasm-bindgen'`)
   .option('--wasm-opt-args <args>', `extra args to pass to 'wasm-opt'`)
+  .option('--wasm-opt-version <ver>', `specify the version of 'wasm-opt' [default: latest]`)
   .option('--modules <modules>', `generate additional js modules(cjs,cjs-inline,esm,esm-inline,esm-sync) [default: 'cjs,esm']`, parseModules)
   .version(require('../package.json').version)
   .action(crate => {
@@ -38,9 +39,10 @@ program
       cargoArgs: opts.cargoArgs ? opts.cargoArgs.split(' ') : [],
       wasmBindgenArgs: opts.wasmBindgenArgs ? opts.wasmBindgenArgs.split(' ') : [],
       wasmOptArgs: opts.wasmOptArgs ? opts.wasmOptArgs.split(' ') : ['-O'],
+      wasmOptVersion: opts.wasmOptVersion,
       install: {
         cacheDir: getCacheDir('wasm-pkg-build'),
-        fetch: { httpsAgent, timeout: 60000 },
+        axiosConfig: { httpsAgent, timeout: 60000 },
         verbose: !!opts.verbose,
       }
     };

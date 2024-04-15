@@ -110,14 +110,14 @@ Arguments:
 
 Options:
   --out-dir <dir>             output directory relative to crate [default: <crate>/pkg]
-  --out-name <var>            set a custom output filename (Without extension) [default: <crate_name>]       
+  --out-name <var>            set a custom output filename (Without extension) [default: <crate_name>]
   --verbose                   whether to display extra compilation information in the console
   --debug                     whether to build in debug mode or release mode
   --cargo-args <args>         extra args to pass to 'cargo build'
   --wasm-bindgen-args <args>  extra args to pass to 'wasm-bindgen'
   --wasm-opt-args <args>      extra args to pass to 'wasm-opt'
-  --modules <modules>         generate additional js modules(cjs,cjs-inline,esm,esm-inline,esm-sync)
-                              [default: 'cjs,esm']
+  --wasm-opt-version <ver>    specify the version of 'wasm-opt'
+  --modules <modules>         generate additional js modules(cjs,cjs-inline,esm,esm-inline,esm-sync) [default: 'cjs,esm']
   -V, --version               output the version number
   -h, --help                  display help for command
 ```
