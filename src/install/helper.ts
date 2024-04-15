@@ -11,15 +11,16 @@ export interface InstallOptions {
 }
 
 export async function getLatestVersion(author: string, name: string, command?: string) {
+  let url = `https://api.github.com/repos/${author}/${name}/releases/latest`;
+  let opts: AxiosRequestConfig = {};
+  if (process.env["GITHUB_TOKEN"]) {
+    opts.headers = { "Authorization": `token ${process.env["GITHUB_TOKEN"]}` };
+  }
   try {
-    let opts: AxiosRequestConfig = {};
-    if (process.env["GITHUB_TOKEN"]) {
-      opts.headers = { "Authorization": `token ${process.env["GITHUB_TOKEN"]}` };
-    }
     const res = await axios.get(`https://api.github.com/repos/${author}/${name}/releases/latest`, opts)
     return res.data.tag_name
   } catch (err) {
-    throw new Error(`Failed to get latest version of '${command ?? name}', ${err?.message || err}`);
+    throw new Error(`Failed to get latest version of '${command ?? name}', fetch '${url}': ${err?.message || err}`);
   }
 }
 
@@ -27,7 +28,7 @@ export async function getLatestVersion(author: string, name: string, command?: s
 export async function getOrInstall(url: string, exePath: string, options: InstallOptions) {
   const name = path.basename(exePath, '.exe');
   const binaryPath = join(options.cacheDir, exePath);
-  
+
   if (await exists(binaryPath)) {
     return binaryPath
   }
