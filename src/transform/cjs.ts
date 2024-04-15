@@ -1,4 +1,3 @@
-import { parse, types } from '@babel/core';
 import generate from '@babel/generator';
 import { inlineWasm, Kind, transformAst } from './helper';
 

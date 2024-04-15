@@ -1,8 +1,9 @@
+import fs from "node:fs/promises";
+import cp from "node:child_process";
+import path from 'node:path';
+import { promisify } from "node:util";
+import os from 'node:os';
 import chalk from "chalk";
-import fs from "fs/promises";
-import cp from "child_process";
-import path from 'path';
-import os from 'os';
 
 export function debug(s: string) {
   console.debug(chalk.blue("> " + s));
@@ -45,20 +46,8 @@ export function write(path: string, data: string | Buffer) {
   return fs.writeFile(path, data);
 }
 
-export function exec(cmd: string, options): Promise<string> {
-  return new Promise((resolve, reject) => {
-    cp.exec(cmd, options, (err, stdout, stderr) => {
-      if (err) {
-        reject(err);
-
-      } else if (stderr.length > 0) {
-        reject(stderr);
-
-      } else {
-        resolve(stdout as unknown as string);
-      }
-    });
-  });
+export function exec(cmd: string, options) {
+  return promisify(cp.exec)(cmd, options);
 }
 
 export function spawn(command: string, args: string[], options: cp.SpawnOptions) {
@@ -80,17 +69,17 @@ export function wait(p): Promise<void> {
 }
 
 export function getCacheDir(name: string) {
-    switch (process.platform) {
+  switch (process.platform) {
     case "win32":
-        const localAppData = process.env.LOCALAPPDATA || path.join(os.homedir(), "AppData", "Local");
-        return path.join(localAppData, name, "Cache");
+      const localAppData = process.env.LOCALAPPDATA || path.join(os.homedir(), "AppData", "Local");
+      return path.join(localAppData, name, "Cache");
 
     case "darwin":
-        return path.join(os.homedir(), "Library", "Caches", name);
+      return path.join(os.homedir(), "Library", "Caches", name);
 
     // https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
     default:
-        const cacheDir = process.env.XDG_CACHE_HOME || path.join(os.homedir(), ".cache");
-        return path.join(cacheDir, name);
-    }
+      const cacheDir = process.env.XDG_CACHE_HOME || path.join(os.homedir(), ".cache");
+      return path.join(cacheDir, name);
+  }
 }

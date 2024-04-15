@@ -1,5 +1,5 @@
 
-import path, { join } from 'path';
+import path, { join } from 'node:path';
 import axios, { AxiosRequestConfig } from 'axios';
 import * as tar from 'tar';
 import { exists, mkdir, debug } from '../utils';
