@@ -12,6 +12,7 @@ export interface InstallOptions {
 
 export async function getLatestVersion(author: string, name: string, command?: string) {
   let url = `https://api.github.com/repos/${author}/${name}/releases/latest`;
+  debug(`Fetching ${url} to get latest version of ${command ?? name}`);
   let opts: AxiosRequestConfig = {};
   if (process.env["GITHUB_TOKEN"]) {
     opts.headers = { "Authorization": `token ${process.env["GITHUB_TOKEN"]}` };
@@ -20,7 +21,7 @@ export async function getLatestVersion(author: string, name: string, command?: s
     const res = await axios.get(`https://api.github.com/repos/${author}/${name}/releases/latest`, opts)
     return res.data.tag_name
   } catch (err) {
-    throw new Error(`Failed to get latest version of '${command ?? name}', fetch '${url}': ${err?.message || err}`);
+    throw new Error(`Failed to get latest version of ${command ?? name}, ${err?.message || err}`);
   }
 }
 
@@ -56,6 +57,6 @@ export async function getOrInstall(url: string, exePath: string, options: Instal
       return binaryPath
     })
     .catch(e => {
-      throw new Error(`Failed to install ${name}, ${e.message}`);
+      throw new Error(`Failed to install ${name} to ${binaryPath}, ${e.message}`);
     });
 }
