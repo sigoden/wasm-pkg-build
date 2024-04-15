@@ -103,7 +103,7 @@ The command-line interface is straightforward and offers several options to cust
 ```
 Usage: wasm-pkg-build [options] [crate]
 
-Generate wasm js modules from a wasm crate
+Effortlessly transform your Rust crate into a WASM-based npm package
 
 Arguments:
   crate                       path to a wasm crate [default: <cwd>]

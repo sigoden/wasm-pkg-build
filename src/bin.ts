@@ -6,10 +6,12 @@ import { HttpsProxyAgent } from 'https-proxy-agent';
 import { BuildOptions, build, SUPPORT_MODULES } from './index';
 import { getCacheDir } from './utils';
 
+let pkg = require('../package.json');
+
 const program = new Command();
 
 program
-  .description('Generate wasm js modules from a wasm crate')
+  .description(pkg.description)
   .argument('[crate]', 'path to a wasm crate [default: <cwd>]')
   .option('--out-dir <dir>', 'output directory relative to crate [default: <crate>/pkg]')
   .option('--out-name <var>', 'set a custom output filename (Without extension) [default: <crate_name>]')
@@ -20,7 +22,7 @@ program
   .option('--wasm-opt-args <args>', `extra args to pass to 'wasm-opt'`)
   .option('--wasm-opt-version <ver>', `specify the version of 'wasm-opt' [default: latest]`)
   .option('--modules <modules>', `generate additional js modules(cjs,cjs-inline,esm,esm-inline,esm-sync) [default: 'cjs,esm']`, parseModules)
-  .version(require('../package.json').version)
+  .version(pkg.version)
   .action(crate => {
     const opts = program.opts();
     const dir = path.resolve(crate ?? process.cwd());
