@@ -12,6 +12,7 @@ export interface BuildOptions {
   cargoArgs: string[],
   wasmBindgenArgs: string[],
   wasmOptArgs: string[],
+  wasmOptVersion: string,
   verbose: boolean,
   debug: boolean,
   install: InstallOptions,
@@ -20,7 +21,7 @@ export interface BuildOptions {
 export async function build(options: BuildOptions) {
   const cargoTomlPath = $path.resolve(options.dir, 'Cargo.toml');
   if (!await exists(cargoTomlPath)) {
-    throw new Error(`crate directory '${options.dir}' don't contain 'Cargo.toml'`)
+    throw new Error(`The crate directory '${options.dir}' don't contain 'Cargo.toml'. Please check the directory or use the '--help' option for further assistance.`)
   }
 
   const [targetDir, cargoToml] = await Promise.all([
@@ -144,7 +145,7 @@ async function getWasmBindgenVersion(options: BuildOptions) {
 }
 
 async function runWasmOpt(options: BuildOptions) {
-  const wasmOptCommand = await getWasmOpt(options.install)
+  const wasmOptCommand = await getWasmOpt(options.install, options.wasmOptVersion)
   const path = `${options.outName}_bg.wasm`;
   const tmp = `${options.outName}_bg_opt.wasm`;
 
