@@ -2,7 +2,7 @@
   "name": "wasm-pkg-build",
   "version": "0.5.2",
   "author": "sigoden <sigoden@gmail.com>",
-  "description": "Effortlessly transform your Rust crate into a WASM-based npm package",
+  "description": "Effortlessly create npm packages from Rust wasm crates",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": "./dist/bin.js",

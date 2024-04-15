@@ -3,7 +3,7 @@
 [![CI](https://github.com/sigoden/wasm-pkg-build/actions/workflows/ci.yaml/badge.svg)](https://github.com/sigoden/aichat/actions/workflows/ci.yaml)
 [![NPM Version](https://img.shields.io/npm/v/wasm-pkg-build)](https://www.npmjs.com/package/wasm-pkg-build)
 
-Effortlessly transform your Rust crate into a WASM-based npm package.
+Effortlessly create npm packages from Rust wasm crates.
 
 ## Key Features:
 
@@ -103,7 +103,7 @@ The command-line interface is straightforward and offers several options to cust
 ```
 Usage: wasm-pkg-build [options] [crate]
 
-Effortlessly transform your Rust crate into a WASM-based npm package
+Generate wasm js modules from a wasm crate
 
 Arguments:
   crate                       path to a wasm crate [default: <cwd>]
