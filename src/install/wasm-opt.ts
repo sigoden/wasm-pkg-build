@@ -2,11 +2,12 @@ import { getLatestVersion, getOrInstall, InstallOptions } from "./helper";
 
 export async function getWasmOpt(options: InstallOptions, version?: string) {
   if (!version || version == "latest") {
-    version = await getLatestVersion('WebAssembly', 'binaryen', 'wasm-opt');
-  }  else if (/^\d+$/.test(version)) {
+    const repo = { owner: "WebAssembly", name: "binaryen", command: "wasm-opt" };
+    version = await getLatestVersion(repo, options);
+  } else if (/^\d+$/.test(version)) {
     version = "version_" + version;
   }
-  const [url, exePath] =  await getUrlAndExePath('WebAssembly', 'binaryen', version);
+  const [url, exePath] = await getUrlAndExePath('WebAssembly', 'binaryen', version);
   return getOrInstall(url, exePath, options);
 }
 

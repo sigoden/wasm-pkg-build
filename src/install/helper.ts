@@ -7,14 +7,23 @@ import { exists, mkdir, debug } from '../utils';
 export interface InstallOptions {
   verbose: boolean
   cacheDir: string,
-  downloadTimeout: number,
+  downloadBinaryTimeout: number,
+  getVersionTimeout: number,
   userAgent: string,
 }
 
-export async function getLatestVersion(author: string, name: string, command: string, options: InstallOptions) {
-  let url = `https://api.github.com/repos/${author}/${name}/releases/latest`;
-  debug(`Fetching ${url} to get latest version of ${command ?? name}`);
+export interface GithubProject {
+  owner: string,
+  name: string,
+  command?: string,
+}
+
+export async function getLatestVersion(project: GithubProject, options: InstallOptions) {
+  const command = project.command || project.name;
+  const url = `https://api.github.com/repos/${project.owner}/${project.name}/releases/latest`;
+  debug(`Fetching ${url} to get latest version of ${command}`);
   let axiosOptions: AxiosRequestConfig = {
+    timeout: options.getVersionTimeout,
     headers: {
       "User-Agent": options.userAgent,
     }
@@ -23,10 +32,10 @@ export async function getLatestVersion(author: string, name: string, command: st
     axiosOptions.headers["Authorization"] = `token ${process.env["GITHUB_TOKEN"]}`;
   }
   try {
-    const res = await axios.get(`https://api.github.com/repos/${author}/${name}/releases/latest`, axiosOptions)
+    const res = await axios.get(url, axiosOptions)
     return res.data.tag_name
   } catch (err) {
-    throw new Error(`Failed to get latest version of ${command ?? name}, ${err?.message || err}`);
+    throw new Error(`Failed to get latest version of ${command}, ${err?.message || err}`);
   }
 }
 
@@ -45,7 +54,7 @@ export async function getOrInstall(url: string, exePath: string, options: Instal
     debug(`Downloading ${name} from ${url}`);
   }
 
-  return axios({ url, responseType: "stream", timeout: options.downloadTimeout, headers: { "User-Agent": options.userAgent } })
+  return axios({ url, responseType: "stream", timeout: options.downloadBinaryTimeout, headers: { "User-Agent": options.userAgent } })
     .then(res => {
       return new Promise<void>((resolve, reject) => {
         const sink = res.data.pipe(
