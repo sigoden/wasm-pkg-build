@@ -2,7 +2,6 @@
 
 import { Command, InvalidOptionArgumentError } from 'commander';
 import path from 'path';
-import { HttpsProxyAgent } from 'https-proxy-agent';
 import { BuildOptions, build, SUPPORT_MODULES } from './index';
 import { getCacheDir } from './utils';
 
@@ -27,10 +26,6 @@ program
     const opts = program.opts();
     const dir = path.resolve(crate ?? process.cwd());
     const outDir = path.resolve(opts.outDir ?? path.resolve(dir, "pkg"));
-    let httpsAgent = null;
-    if (process.env["HTTPS_PROXY"]) {
-      httpsAgent = new HttpsProxyAgent(process.env["HTTPS_PROXY"]);
-    }
     const options: BuildOptions = {
       dir,
       outDir,
@@ -44,7 +39,9 @@ program
       wasmOptVersion: opts.wasmOptVersion,
       install: {
         cacheDir: getCacheDir('wasm-pkg-build'),
-        axiosConfig: { httpsAgent, timeout: 60000 },
+        downloadBinaryTimeout: 60000,
+        getVersionTimeout: 60000,
+        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
         verbose: !!opts.verbose,
       }
     };
