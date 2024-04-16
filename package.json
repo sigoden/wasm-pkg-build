@@ -32,7 +32,6 @@
     "axios": "^1.6.8",
     "chalk": "^2",
     "commander": "^12.0.0",
-    "https-proxy-agent": "^7.0.4",
     "tar": "^7.0.0",
     "toml": "^3.0.0"
   },
