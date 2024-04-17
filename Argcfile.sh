@@ -22,6 +22,9 @@ test() {
     cp $crate/pkg/${name}_worker.js $crate/pkg/${name}_worker.mjs
     node test-crate/test-node.js
     node test-crate/test-worker.mjs
+    if command -v deno &> /dev/null; then
+        deno run test-crate/test-deno.ts
+    fi
 }
 
 eval "$(argc --argc-eval "$0" "$@")"
