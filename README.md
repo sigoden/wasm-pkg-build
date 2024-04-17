@@ -7,9 +7,9 @@ Effortlessly create npm packages from Rust wasm crates.
 
 ## Key Features:
 
-* **Simplified WASM Package Creation:** wasm-pkg-build automatically handles the process of compiling Rust crates, generating JavaScript bindings, and optimizing WASM files.
-* **Single Package, Multiple Module Types:** wasm-pkg-build can produce a single npm package that supports multiple module types and shares a single WASM file.
-* **Automated Tool Management:** wasm-pkg-build takes care of managing essential tools like wasm-bindgen and wasm-opt, ensuring you always have the best version.
+* **Effortless Package Creation:** Automatically compiles your Rust code, generates JavaScript bindings, and optimizes WASM files. 
+* **Multiple Module Types:** Supports various JS module types (CJS, ESM) and WASM loading methods (sync, async) in a single package.
+* **Tool Management:** No need to worry about wasm-bindgen or wasm-opt tools – it handles everything for you!
 
 ## Installation
 
