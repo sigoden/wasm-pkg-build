@@ -1,6 +1,6 @@
 {
   "name": "wasm-pkg-build",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "author": "sigoden <sigoden@gmail.com>",
   "description": "Effortlessly create npm packages from Rust wasm crates",
   "main": "./dist/index.js",
