@@ -1,6 +1,6 @@
 # wasm-pkg-build
 
-[![CI](https://github.com/sigoden/wasm-pkg-build/actions/workflows/ci.yaml/badge.svg)](https://github.com/sigoden/aichat/actions/workflows/ci.yaml)
+[![CI](https://github.com/sigoden/wasm-pkg-build/actions/workflows/ci.yaml/badge.svg)](https://github.com/sigoden/wasm-pkg-build/actions/workflows/ci.yaml)
 [![NPM Version](https://img.shields.io/npm/v/wasm-pkg-build)](https://www.npmjs.com/package/wasm-pkg-build)
 
 Effortlessly create npm packages from Rust wasm crates.
